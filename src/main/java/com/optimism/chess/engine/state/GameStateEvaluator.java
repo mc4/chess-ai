@@ -21,7 +21,7 @@ public class GameStateEvaluator {
 
         return board.getPiecesOfColor(opponentColor).stream()
                 .flatMap(piece -> MoveGenerator.generateMoves(board, piece).stream())
-                .anyMatch(move -> Objects.equals(move.getTo(), kingPos));
+                .anyMatch(move -> Objects.equals(move.to(), kingPos));
     }
 
     public static boolean hasLegalMoves(Board board, Color color) {
@@ -29,7 +29,7 @@ public class GameStateEvaluator {
                 .flatMap(piece -> MoveGenerator.generateMoves(board, piece).stream())
                 .anyMatch(move -> {
                     Board simulated = board.copy();
-                    simulated.makeMove(move.getFrom(), move.getTo());
+                    simulated.makeMove(move.from(), move.to());
                     return !isInCheck(simulated, color);
                 });
     }

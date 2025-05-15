@@ -7,6 +7,7 @@ import com.optimism.chess.engine.core.Color;
 import com.optimism.chess.engine.core.Copyable;
 import com.optimism.chess.engine.core.Position;
 import com.optimism.chess.engine.move.Move;
+import com.optimism.chess.engine.move.MoveFactory;
 import com.optimism.chess.engine.pieces.Bishop;
 import com.optimism.chess.engine.pieces.King;
 import com.optimism.chess.engine.pieces.Knight;
@@ -111,53 +112,46 @@ public class Board implements Copyable<Board> {
 	// === Move Logic ===
 	public boolean makeMove(Position from, Position to) {
 	    Piece movedPiece = getPieceAt(from);
-	    
 	    if (movedPiece == null || movedPiece.getColor() != currentTurn) {
 	        return false;
 	    }
 
 	    Piece targetPiece = getPieceAt(to);
+	    Move move;
 
-	    boolean isCastling = false;
-	    boolean isEnPassant = false;
-	    Piece promotionPiece = null;
-
-	    // Detect castling (simplified: assumes king moves 2 squares horizontally)
+	    // Detect castling
 	    if (movedPiece instanceof King && Math.abs(from.getCol() - to.getCol()) == 2) {
-	        isCastling = true;
-	        // TODO: move rook as part of castling (based on kingside/queenside)
-	    }
-
-	    // Detect en passant (assumes you are tracking last move and en passant target square)
-	    if (movedPiece instanceof Pawn && targetPiece == null && from.getCol() != to.getCol()) {
-	        isEnPassant = true;
-	        Position capturedPawnPosition = new Position(from.getRow(), to.getCol());
-	        targetPiece = getPieceAt(capturedPawnPosition);
-	        setPieceAt(capturedPawnPosition, null);
-	    }
-
-	    // Detect promotion (simplified)
-	    if (movedPiece instanceof Pawn) {
+	        move = MoveFactory.castle(from, to, movedPiece);
+	        // TODO: Move the rook as part of castling
+	    } else if (movedPiece instanceof Pawn && targetPiece == null && from.getCol() != to.getCol()) { // Detect en passant
+	        Position capturedPawnPos = new Position(from.getRow(), to.getCol());
+	        Piece capturedPawn = getPieceAt(capturedPawnPos);
+	        move = MoveFactory.enPassant(from, to, movedPiece, capturedPawn);
+	        setPieceAt(capturedPawnPos, null); // Remove captured pawn
+	    } else if (movedPiece instanceof Pawn) { // Detect promotion
 	        int lastRank = (movedPiece.getColor() == Color.WHITE) ? 7 : 0;
 	        if (to.getRow() == lastRank) {
-	            // Replace with your promotion UI or logic — use queen as default for now
-	            promotionPiece = new Queen(movedPiece.getColor());
-	            promotionPiece.setPosition(to);
-	            setPieceAt(to, promotionPiece);
+	            Piece promotedPiece = new Queen(movedPiece.getColor());
+	            promotedPiece.setPosition(to);
+	            setPieceAt(to, promotedPiece);
+	            move = MoveFactory.promotion(from, to, movedPiece, promotedPiece);
+	        } else if (targetPiece == null) { // Regular or capturing pawn move
+	            move = MoveFactory.normal(from, to, movedPiece);
+	        } else {
+	            move = MoveFactory.capture(from, to, movedPiece, targetPiece);
+	        }
+	    }
+	    // All other pieces
+	    else {
+	        if (targetPiece == null) {
+	            move = MoveFactory.normal(from, to, movedPiece);
+	        } else {
+	            move = MoveFactory.capture(from, to, movedPiece, targetPiece);
 	        }
 	    }
 
-	    // Build move object with full context
-	    Move move = new Move.Builder(from, to)
-	        .movedPiece(movedPiece)
-	        .capturedPiece(targetPiece)
-	        .castling(isCastling)
-	        .enPassant(isEnPassant)
-	        .promotionPiece(promotionPiece)
-	        .build();
-
 	    // Apply move
-	    if (promotionPiece == null) {
+	    if (!move.isPromotion()) {
 	        setPieceAt(to, movedPiece);
 	        movedPiece.setPosition(to);
 	    }
@@ -165,9 +159,10 @@ public class Board implements Copyable<Board> {
 	    setPieceAt(from, null);
 	    moveHistory.add(move);
 	    switchTurn();
-
 	    return true;
 	}
+
+
 
 	public List<Piece> getActivePieces(Color color) {
 		List<Piece> activePieces = new ArrayList<>();

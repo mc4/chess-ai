@@ -42,10 +42,10 @@ public class MoveGenerator {
 	        Piece targetPiece = board.getPieceAt(target);
 
 	        if (targetPiece == null) {
-	            moves.add(new Move.Builder(piece.getPosition(), target).build());
+	        	moves.add(MoveFactory.normal(piece.getPosition(), target, piece));
 	        } else {
 	            if (targetPiece.getColor() != piece.getColor()) {
-	                moves.add(new Move.Builder(piece.getPosition(), target).build());
+	            	moves.add(MoveFactory.capture(piece.getPosition(), target, piece, targetPiece));
 	            }
 	            break;
 	        }
@@ -63,10 +63,13 @@ public class MoveGenerator {
 			int col = piece.getPosition().getCol() + direction.colOffset();
 
 			if (Position.isValid(row, col)) {
-				Piece targetPiece = board.getPieceAt(new Position(row, col));
-				if (targetPiece == null || targetPiece.getColor() != piece.getColor()) {
-					// Empty or opponent's piece, valid move
-					moves.add(new Move.Builder(piece.getPosition(), new Position(row, col)).build());
+				Position target = new Position(row, col);
+				Piece targetPiece = board.getPieceAt(target);
+				
+				if (targetPiece == null) {
+					moves.add(MoveFactory.normal(piece.getPosition(), target, piece));
+				} else if (targetPiece.getColor() != piece.getColor()) {
+					moves.add(MoveFactory.capture(piece.getPosition(), target, piece, targetPiece));
 				}
 			}
 		}
@@ -88,17 +91,17 @@ public class MoveGenerator {
 	}
 
 	private static void generatePawnMovesForWhite(Board board, Piece piece, List<Move> moves) {
-		Position position = piece.getPosition();
-		int row = position.getRow();
-		int col = position.getCol();
+		Position from = piece.getPosition();
+		int row = from.getRow();
+		int col = from.getCol();
 
 		Position oneStep = new Position(row + 1, col);
 		if (Position.isValid(oneStep) && board.getPieceAt(oneStep) == null) {
-			moves.add(new Move.Builder(position, oneStep).build());
+			moves.add(MoveFactory.normal(from, oneStep, piece));
 
 			Position twoStep = new Position(row + 2, col);
 			if (row == 1 && board.getPieceAt(twoStep) == null) {
-				moves.add(new Move.Builder(position, twoStep).build());
+				moves.add(MoveFactory.normal(from, twoStep, piece));
 			}
 		}
 
@@ -109,9 +112,9 @@ public class MoveGenerator {
 
 		for (Position target : captures) {
 			if (Position.isValid(target)) {
-				Piece captured = board.getPieceAt(target);
-				if (captured != null && captured.getColor() == Color.BLACK) {
-					moves.add(new Move.Builder(position, target).build());
+				Piece targetPiece = board.getPieceAt(target);
+				if (target != null && targetPiece.getColor() == Color.BLACK) {
+					moves.add(MoveFactory.capture(from, target, piece, targetPiece));
 				}
 			}
 		}
@@ -120,19 +123,19 @@ public class MoveGenerator {
 	}
 
 	private static void generatePawnMovesForBlack(Board board, Piece piece, List<Move> moves) {
-	    Position pos = piece.getPosition();
-	    int row = pos.getRow();
-	    int col = pos.getCol();
+	    Position from = piece.getPosition();
+	    int row = from.getRow();
+	    int col = from.getCol();
 
 	    Position oneStep = new Position(row - 1, col);
-	    if (Position.isValid(oneStep) && board.getPieceAt(oneStep) == null) {
-	        moves.add(new Move.Builder(pos, oneStep).build());
+		if (Position.isValid(oneStep) && board.getPieceAt(oneStep) == null) {
+			moves.add(MoveFactory.normal(from, oneStep, piece));
 
-	        Position twoStep = new Position(row - 2, col);
-	        if (row == 6 && board.getPieceAt(twoStep) == null) {
-	            moves.add(new Move.Builder(pos, twoStep).build());
-	        }
-	    }
+			Position twoStep = new Position(row - 2, col);
+			if (row == 6 && board.getPieceAt(twoStep) == null) {
+				moves.add(MoveFactory.normal(from, twoStep, piece));
+			}
+		}
 
 	    Position[] captures = {
 	        new Position(row - 1, col - 1),
@@ -140,12 +143,12 @@ public class MoveGenerator {
 	    };
 
 	    for (Position target : captures) {
-	        if (Position.isValid(target)) {
-	            Piece captured = board.getPieceAt(target);
-	            if (captured != null && captured.getColor() == Color.WHITE) {
-	                moves.add(new Move.Builder(pos, target).build());
-	            }
-	        }
+			if (Position.isValid(target)) {
+				Piece targetPiece = board.getPieceAt(target);
+				if (target != null && targetPiece.getColor() == Color.WHITE) {
+					moves.add(MoveFactory.capture(from, target, piece, targetPiece));
+				}
+			}
 	    }
 
 	    // TODO: Handle promotion and en passant
@@ -162,9 +165,11 @@ public class MoveGenerator {
 				Position target = new Position(row, col);
 				Piece targetPiece = board.getPieceAt(target);
 				
-	            if (targetPiece == null || targetPiece.getColor() != king.getColor()) {
-	                moves.add(new Move.Builder(king.getPosition(), target).build());
-	            }
+				if (targetPiece == null) {
+					moves.add(MoveFactory.normal(king.getPosition(), target, king));
+				} else if (targetPiece.getColor() != king.getColor()) {
+					moves.add(MoveFactory.capture(king.getPosition(), target, king, targetPiece));
+				}
 			}
 		}
 		

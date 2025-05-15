@@ -1,0 +1,11 @@
+# Ignore compiled class files
+*.class
+
+# Ignore Maven target directory
+target/
+
+# Ignore logs, temp files, and OS artifacts
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
