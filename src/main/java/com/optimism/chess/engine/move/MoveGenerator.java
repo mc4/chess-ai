@@ -153,6 +153,23 @@ public class MoveGenerator {
 
 	public static List<Move> generateKingMoves(Board board, Piece king) {
 		List<Move> moves = new ArrayList<>();
+		
+		for (Direction direction : Direction.KING_DIRECTIONS) {
+			int row = king.getPosition().getRow() + direction.rowOffset();
+			int col = king.getPosition().getCol() + direction.colOffset();
+			
+			if (Position.isValid(row, col)) {
+				Position target = new Position(row, col);
+				Piece targetPiece = board.getPieceAt(target);
+				
+	            if (targetPiece == null || targetPiece.getColor() != king.getColor()) {
+	                moves.add(new Move.Builder(king.getPosition(), target).build());
+	            }
+			}
+		}
+		
+		 // TODO: Handle castling
+		
 		return moves;
 	}
 	

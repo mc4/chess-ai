@@ -49,6 +49,11 @@ public enum Direction {
         UP, DOWN, LEFT, RIGHT,
         UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT
     };
+    
+    public static final Direction[] KING_DIRECTIONS = {
+            UP, DOWN, LEFT, RIGHT,
+            UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT
+        };
 
 	public static final Direction[] KNIGHT_DIRECTIONS = { UP_2_RIGHT_1, UP_2_LEFT_1, DOWN_2_RIGHT_1, DOWN_2_LEFT_1,
 			RIGHT_2_UP_1, RIGHT_2_DOWN_1, LEFT_2_UP_1, LEFT_2_DOWN_1
