@@ -5,6 +5,7 @@ import java.util.List;
 import com.optimism.chess.engine.board.Board;
 import com.optimism.chess.engine.core.Color;
 import com.optimism.chess.engine.move.Move;
+import com.optimism.chess.engine.move.MoveGenerator;
 
 public class King extends Piece {
 
@@ -14,7 +15,7 @@ public class King extends Piece {
 
 	@Override
 	public List<Move> getPossibleMoves(Board board) {
-		return null;
+		return MoveGenerator.generateKingMoves(board, this);
 	}
 
 	@Override

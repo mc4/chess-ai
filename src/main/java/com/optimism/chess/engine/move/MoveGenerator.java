@@ -55,10 +55,10 @@ public class MoveGenerator {
 	}
 
 
-	public static List<Move> generateJumpingMoves(Board board, Piece piece, Direction[] directions) {
+	public static List<Move> generateJumpingMoves(Board board, Piece piece) {
 		List<Move> moves = new ArrayList<>();
 
-		for (Direction direction : directions) {
+		for (Direction direction : Direction.KNIGHT_DIRECTIONS) {
 			int row = piece.getPosition().getRow() + direction.rowOffset();
 			int col = piece.getPosition().getCol() + direction.colOffset();
 
@@ -187,7 +187,7 @@ public class MoveGenerator {
 		        moves.addAll(generateSlidingMoves(board, piece, Direction.BISHOP_DIRECTIONS));
 		        return moves;
 		    },
-		    Knight.class,  (board, piece) -> generateJumpingMoves(board, piece, Direction.KNIGHT_DIRECTIONS),
+		    Knight.class,  (board, piece) -> generateJumpingMoves(board, piece),
 		    Pawn.class,    MoveGenerator::generatePawnMoves,
 		    King.class,    MoveGenerator::generateKingMoves
 		);
