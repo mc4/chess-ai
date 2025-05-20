@@ -1,6 +1,7 @@
 package com.optimism.chess.engine.pieces;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.optimism.chess.engine.board.Board;
 import com.optimism.chess.engine.core.Color;
@@ -23,7 +24,6 @@ public abstract class Piece implements Copyable<Piece> {
 	@Override
 	public abstract Piece copy();
 
-	// Getters and setters
 	public Color getColor() {
 		return color;
 	}
@@ -34,6 +34,29 @@ public abstract class Piece implements Copyable<Piece> {
 
 	public void setPosition(Position position) {
 		this.position = position;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Piece piece = (Piece) o;
+		return color == piece.color && Objects.equals(position, piece.position);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getClass(), color, position);
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(" + color + " at " + position + ")";
 	}
 
 }
