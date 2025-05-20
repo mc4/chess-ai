@@ -27,13 +27,40 @@ public class Board implements Copyable<Board> {
 	private List<Move> moveHistory;
 
 	public Board() {
-		board = new Piece[BOARD_SIZE][BOARD_SIZE];
-		initializeBoard();
-		currentTurn = Color.WHITE;
-		moveHistory = new ArrayList<>();
+		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
+		setupInitialPosition();
+		this.currentTurn = Color.WHITE;
+		this.moveHistory = new ArrayList<>();
+	}
+	
+	private Board(boolean skipSetup) {
+	    this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
+	    this.currentTurn = Color.WHITE;
+	    this.moveHistory = new ArrayList<>();
+
+	    if (!skipSetup) {
+	        setupInitialPosition(); 
+	    }
+	}
+	
+	public static Board emptyBoard() {
+	    return new Board(true); 
+	}
+	
+	public Board place(String square, Piece piece) {
+	    Position pos = new Position(square);
+	    piece.setPosition(pos);
+	    setPieceAt(pos, piece);
+	    return this;
 	}
 
-	private void initializeBoard() {
+	public Board place(Position pos, Piece piece) {
+	    piece.setPosition(pos);
+	    setPieceAt(pos, piece);
+	    return this;
+	}
+
+	private void setupInitialPosition() {
 		board = new Piece[8][8];
 		board[1][0] = new Pawn(Color.WHITE);
 		board[1][1] = new Pawn(Color.WHITE);
@@ -159,6 +186,10 @@ public class Board implements Copyable<Board> {
 		return getActivePieces(p -> true);
 	}
 	
+	public List<Move> getMoveHistory() {
+	    return List.copyOf(moveHistory); 
+	}
+	
 	@Override
 	public Board copy() {
 		Board newBoard = new Board();
@@ -183,4 +214,5 @@ public class Board implements Copyable<Board> {
 			System.out.println();
 		}
 	}
+	
 }

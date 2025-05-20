@@ -1,9 +1,12 @@
 package com.optimism.chess.engine.board;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.optimism.chess.engine.core.Color;
 import com.optimism.chess.engine.core.Position;
+import com.optimism.chess.engine.move.Move;
 import com.optimism.chess.engine.pieces.King;
 import com.optimism.chess.engine.pieces.Pawn;
 import com.optimism.chess.engine.pieces.Piece;
@@ -22,13 +26,14 @@ class BoardTest {
 
 	@BeforeEach
 	void setUp() {
-		board = new Board();
+		board = Board.emptyBoard();
 	}
 
 	// Basic Setup & State
 
 	@Test
 	void testInitialBoardSetup() {
+		board = new Board();
 		int whitePieces = 0;
 		int blackPieces = 0;
 		int whiteKings = 0;
@@ -76,10 +81,21 @@ class BoardTest {
 	    assertTrue(retrieved instanceof Queen, "Piece should be instance of Queen");
 	}
 	// Move Execution
+	
+	@Test
+	void testSimplePawnMove() {
+	    Board board = Board.emptyBoard()
+	    		.place("e2", new Pawn(Color.WHITE));
+
+	    boolean result = board.makeMove(new Position("e2"), new Position("e4"));
+
+	    assertTrue(result);
+	    assertNull(board.getPieceAt(new Position("e2")));
+	    assertNotNull(board.getPieceAt(new Position("e4")));
+	}
 
 	@Test
 	void testMakeNormalMove() {
-		
 	    // Place a white queen at d4 (3, 3) 
 	    Position from = new Position(3, 3); // d4
 	    Position to = new Position(5, 3);   // d6
@@ -129,13 +145,27 @@ class BoardTest {
 
 	@Test
 	void testMakeIllegalMoveWrongTurn() {
+	    Position from = new Position("e7"); 
+	    Position to = new Position("e5"); 
+	    
+	    Piece blackPawn = new Pawn(Color.BLACK);
+	    blackPawn.setPosition(from);
+	    board.setPieceAt(from, blackPawn);
+	    
+	    boolean result = board.makeMove(from, to);
+	    
+	    assertFalse(result, "Black moving on white's turn should fail");
+	    assertEquals(board.getPieceAt(from), blackPawn, "Black pawn should be on e7");
+	    assertNull(board.getPieceAt(to), "Destination square should be empty after move failed");
+	    assertFalse(board.getCurrentTurn() == Color.BLACK, "Black should not move first");
+	    assertTrue(board.getMoveHistory().isEmpty(), "No move should be recorded for an illegal move");
 	}
 
 	@Test
 	void testMoveUpdatesTurn() {
 		
 	}
-
+	
 	// Special Moves
 
 	@Disabled("Not implemented yet")
@@ -159,10 +189,30 @@ class BoardTest {
 
 	// Move History
 
-	@Disabled("Not implemented yet")
 	@Test
 	void testMoveIsRecordedInHistory() {
+	    Board board = Board.emptyBoard()
+	                       .place("e2", new Pawn(Color.WHITE))
+	                       .place("e1", new King(Color.WHITE))
+	                       .place("e8", new King(Color.BLACK));
+
+	    Position from = new Position("e2");
+	    Position to = new Position("e4");
+
+	    boolean moveResult = board.makeMove(from, to);
+
+	    assertTrue(moveResult, "Move should succeed");
+	    
+	    List<Move> history = board.getMoveHistory();
+	    assertEquals(1, history.size(), "Move history should contain exactly one move");
+	    
+	    Move move = history.get(0);
+	    assertEquals(from, move.from(), "Move 'from' position should be correct");
+	    assertEquals(to, move.to(), "Move 'to' position should be correct");
+	    assertEquals(Color.WHITE, move.movedPiece().getColor(), "Moved piece should be white");
+	    assertNull(move.capturedPiece(), "No piece should be captured in this move");
 	}
+
 
 	@Disabled("Not implemented yet")
 	@Test
