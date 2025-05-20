@@ -127,17 +127,18 @@ class BoardTest {
 	    assertEquals(Color.WHITE, movedPiece.getColor(), "Moved piece should be white");
 	}
 
-
 	@Test
 	void testMakeIllegalMoveWrongTurn() {
 	}
 
 	@Test
 	void testMoveUpdatesTurn() {
+		
 	}
 
 	// Special Moves
 
+	@Disabled("Not implemented yet")
 	@Test
 	void testCastlingMove() {
 	}
@@ -151,6 +152,10 @@ class BoardTest {
 	@Test
 	void testPawnPromotion() {
 	}
+	
+	@Test
+	void testPawnPromotionToQueen() {
+	}	
 
 	// Move History
 

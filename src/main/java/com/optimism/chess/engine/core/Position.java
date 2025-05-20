@@ -14,6 +14,25 @@ public final class Position {
 		this.row = row;
 		this.col = col;
 	}
+	public Position(String algebraic) {
+		if (algebraic == null || algebraic.length() != 2)
+			throw new IllegalArgumentException("Invalid position: " + algebraic);
+
+		char file = algebraic.charAt(0);
+		char rank = algebraic.charAt(1);
+
+		if (file < 'a' || file > 'h' || rank < '1' || rank > '8')
+			throw new IllegalArgumentException("Invalid position: " + algebraic);
+
+		this.col = file - 'a'; // a-h maps to 0-7
+		this.row = rank - '1'; // 1-8 maps to 0-7
+	}
+
+	public String toAlgebraic() {
+		char file = (char) ('a' + col);
+		char rank = (char) ('1' + row);
+		return "" + file + rank;
+	}
 
 	public int getRow() {
 		return row;
@@ -30,6 +49,7 @@ public final class Position {
 	public static boolean isValid(Position pos) {
 		return pos != null && isValid(pos.getRow(), pos.getCol());
 	}
+	
 
 	@Override
 	public boolean equals(Object o) {
@@ -50,6 +70,6 @@ public final class Position {
 
 	@Override
 	public String toString() {
-		return "(" + row + ", " + col + ")";
+		return toAlgebraic();
 	}
 }
