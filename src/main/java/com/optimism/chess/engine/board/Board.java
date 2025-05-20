@@ -1,7 +1,9 @@
 package com.optimism.chess.engine.board;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.optimism.chess.engine.core.Color;
 import com.optimism.chess.engine.core.Copyable;
@@ -83,31 +85,12 @@ public class Board implements Copyable<Board> {
 		return getPieceAt(position) == null;
 	}
 
-	public boolean isWithinBounds(Position position) {
-		int row = position.getRow();
-		int col = position.getCol();
-		return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
-	}
-
 	public Color getCurrentTurn() {
 		return currentTurn;
 	}
 
 	public void switchTurn() {
 		currentTurn = currentTurn.opposite();
-	}
-
-	public List<Piece> getPiecesOfColor(Color color) {
-		List<Piece> pieces = new ArrayList<>();
-		for (int row = 0; row < BOARD_SIZE; row++) {
-			for (int col = 0; col < BOARD_SIZE; col++) {
-				Piece piece = getPieceAt(new Position(row, col));
-				if (piece != null && piece.getColor() == color) {
-					pieces.add(piece);
-				}
-			}
-		}
-		return pieces;
 	}
 	
 	// === Move Logic ===
@@ -160,33 +143,20 @@ public class Board implements Copyable<Board> {
 	    switchTurn();
 	    return true;
 	}
-
-
+	
+	public List<Piece> getActivePieces(Predicate<Piece> filter) {
+		return Arrays.stream(board)
+			.flatMap(Arrays::stream)
+			.filter(p -> p != null && filter.test(p))
+			.toList();
+	}
 
 	public List<Piece> getActivePieces(Color color) {
-		List<Piece> activePieces = new ArrayList<>();
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
-				Piece piece = board[row][col];
-				if (piece != null && piece.getColor() == color) {
-					activePieces.add(piece);
-				}
-			}
-		}
-		return activePieces;
+		return getActivePieces(p -> p.getColor() == color);
 	}
 
 	public List<Piece> getAllActivePieces() {
-		List<Piece> activePieces = new ArrayList<>();
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
-				Piece piece = board[row][col];
-				if (piece != null) {
-					activePieces.add(piece);
-				}
-			}
-		}
-		return activePieces;
+		return getActivePieces(p -> true);
 	}
 	
 	@Override
