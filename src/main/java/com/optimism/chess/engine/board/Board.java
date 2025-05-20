@@ -28,6 +28,7 @@ public class Board implements Copyable<Board> {
 		board = new Piece[BOARD_SIZE][BOARD_SIZE];
 		initializeBoard();
 		currentTurn = Color.WHITE;
+		moveHistory = new ArrayList<>();
 	}
 
 	private void initializeBoard() {
@@ -140,9 +141,7 @@ public class Board implements Copyable<Board> {
 	        } else {
 	            move = MoveFactory.capture(from, to, movedPiece, targetPiece);
 	        }
-	    }
-	    // All other pieces
-	    else {
+	    } else { // All other pieces
 	        if (targetPiece == null) {
 	            move = MoveFactory.normal(from, to, movedPiece);
 	        } else {
