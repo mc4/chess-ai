@@ -54,7 +54,7 @@ The engine aims to provide a solid foundation for building a complete chess AI o
 ### Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/chess-engine.git
+git clone https://github.com/mc4/chess-engine.git
 cd chess-engine
 ```
 
