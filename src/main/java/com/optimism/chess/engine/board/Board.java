@@ -3,39 +3,44 @@ package com.optimism.chess.engine.board;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import com.optimism.chess.engine.core.Color;
 import com.optimism.chess.engine.core.Copyable;
 import com.optimism.chess.engine.core.Position;
+import com.optimism.chess.engine.move.AttackMapGenerator;
 import com.optimism.chess.engine.move.Move;
 import com.optimism.chess.engine.move.MoveFactory;
+import com.optimism.chess.engine.move.handler.CastlingMoveHandler;
+import com.optimism.chess.engine.move.handler.EnPassantMoveHandler;
+import com.optimism.chess.engine.move.handler.PromotionMoveHandler;
+import com.optimism.chess.engine.move.handler.SpecialMoveHandler;
 import com.optimism.chess.engine.pieces.Bishop;
 import com.optimism.chess.engine.pieces.King;
 import com.optimism.chess.engine.pieces.Knight;
 import com.optimism.chess.engine.pieces.Pawn;
 import com.optimism.chess.engine.pieces.Piece;
+import com.optimism.chess.engine.pieces.PieceType;
 import com.optimism.chess.engine.pieces.Queen;
 import com.optimism.chess.engine.pieces.Rook;
+import com.optimism.chess.engine.state.CastlingRights;
 
 public class Board implements Copyable<Board> {
 
 	private static final int BOARD_SIZE = 8;
-
 	private Piece[][] board;
 	private Color currentTurn;
 	private List<Move> moveHistory;
-	
-	private boolean whiteCanCastleKingside = true;
-	private boolean whiteCanCastleQueenside = true;
-	private boolean blackCanCastleKingside = true;
-	private boolean blackCanCastleQueenside = true;
-	
+	private CastlingRights castlingRights;
+    private final CastlingMoveHandler castlingMoveHandler = new CastlingMoveHandler();
+    
 	public Board() {
 		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
 		setupInitialPosition();
 		this.currentTurn = Color.WHITE;
 		this.moveHistory = new ArrayList<>();
+		this.castlingRights = new CastlingRights();
 	}
 	
 	private Board(boolean skipSetup) {
@@ -103,8 +108,11 @@ public class Board implements Copyable<Board> {
 		board[7][6] = new Knight(Color.BLACK);
 		board[7][7] = new Rook(Color.BLACK);
 	}
+	
+	public CastlingRights getCastlingRights() {
+	    return castlingRights;
+	}
 
-	// === Accessors ===
 	public Piece getPieceAt(Position position) {
 		return board[position.getRow()][position.getCol()];
 	}
@@ -125,217 +133,102 @@ public class Board implements Copyable<Board> {
 		currentTurn = currentTurn.opposite();
 	}
 	
-	// === Move Logic ===
 	public boolean makeMove(Position from, Position to) {
 	    Piece movedPiece = getPieceAt(from);
 	    if (movedPiece == null || movedPiece.getColor() != currentTurn) {
 	        return false;
 	    }
 
-	    Piece targetPiece = getPieceAt(to);
-	    Move move;
+	    final List<SpecialMoveHandler> specialMoveHandlers = List.of(
+	        new CastlingMoveHandler(),
+	        new EnPassantMoveHandler(),
+	        new PromotionMoveHandler()
+	    );
 
-	    // Detect castling
-		if (movedPiece instanceof King && Math.abs(from.getCol() - to.getCol()) == 2) {
-	        if (!canCastle(from, to, movedPiece.getColor())) {
-	            return false;
-	        }
+	    Move move = specialMoveHandlers.stream()
+	        .filter(handler -> handler.canHandle(movedPiece, from, to))
+	        .map(handler -> handler.handle(this, movedPiece, from, to))
+	        .filter(Objects::nonNull)
+	        .findFirst()
+	        .orElseGet(() -> createStandardMove(from, to, movedPiece));
 
-	        move = MoveFactory.castle(from, to, movedPiece);
-	        moveRookForCastling(from, to); // TODO: implement
-
-	        if (movedPiece.getColor() == Color.WHITE) {
-	            whiteCanCastleKingside = false;
-	            whiteCanCastleQueenside = false;
-	        } else {
-	            blackCanCastleKingside = false;
-	            blackCanCastleQueenside = false;
-	        }
-	    } else if (movedPiece instanceof Pawn && targetPiece == null && from.getCol() != to.getCol()) { // Detect en passant
-	        Position capturedPawnPos = new Position(from.getRow(), to.getCol());
-	        Piece capturedPawn = getPieceAt(capturedPawnPos);
-	        move = MoveFactory.enPassant(from, to, movedPiece, capturedPawn);
-	        setPieceAt(capturedPawnPos, null); // Remove captured pawn
-	    } else if (movedPiece instanceof Pawn) { // Detect promotion
-	        int lastRank = (movedPiece.getColor() == Color.WHITE) ? 7 : 0;
-	        if (to.getRow() == lastRank) {
-	            Piece promotedPiece = new Queen(movedPiece.getColor());
-	            promotedPiece.setPosition(to);
-	            setPieceAt(to, promotedPiece);
-	            move = MoveFactory.promotion(from, to, movedPiece, promotedPiece);
-	        } else if (targetPiece == null) { // Regular or capturing pawn move
-	            move = MoveFactory.normal(from, to, movedPiece);
-	        } else {
-	            move = MoveFactory.capture(from, to, movedPiece, targetPiece);
-	        }
-	    } else { // All other pieces
-	        if (targetPiece == null) {
-	            move = MoveFactory.normal(from, to, movedPiece);
-	        } else {
-	            move = MoveFactory.capture(from, to, movedPiece, targetPiece);
-	        }
+	    if (move == null) {
+	    	return false;
 	    }
-	    
-		// Update castling rights
-	    if (movedPiece instanceof King) {
-	        if (movedPiece.getColor() == Color.WHITE) {
-	            whiteCanCastleKingside = false;
-	            whiteCanCastleQueenside = false;
-	        } else {
-	            blackCanCastleKingside = false;
-	            blackCanCastleQueenside = false;
-	        }
-		} else if (movedPiece instanceof Rook) {
-			int row = movedPiece.getColor() == Color.WHITE ? 0 : 7;
-			if (from.equals(new Position(row, 0))) {
-				if (movedPiece.getColor() == Color.WHITE) {
-					whiteCanCastleQueenside = false;
-				} else {
-					blackCanCastleQueenside = false;
-				}
-			} else if (from.equals(new Position(row, 7))) {
-				if (movedPiece.getColor() == Color.WHITE) {
-					whiteCanCastleKingside = false;
-				} else {
-					blackCanCastleKingside = false;
-				}
-			}
-		}
-		
-	    // Also, if a rook is captured, update castling rights
-		if (targetPiece instanceof Rook) {
-			int row = targetPiece.getColor() == Color.WHITE ? 0 : 7;
-			if (to.equals(new Position(row, 0))) {
-				if (targetPiece.getColor() == Color.WHITE) {
-					whiteCanCastleQueenside = false;
-				} else {
-					blackCanCastleQueenside = false;
-				}
-			} else if (to.equals(new Position(row, 7))) {
-				if (targetPiece.getColor() == Color.WHITE) {
-					whiteCanCastleKingside = false;
-				} else {
-					blackCanCastleKingside = false;
-				}
-			}
-		}
 
-		if (targetPiece instanceof Rook) {
-			int row = targetPiece.getColor() == Color.WHITE ? 0 : 7;
-			if (to.equals(new Position(row, 0))) {
-				if (targetPiece.getColor() == Color.WHITE) {
-					whiteCanCastleQueenside = false;
-				} else {
-					blackCanCastleQueenside = false;
-				}
-			} else if (to.equals(new Position(row, 7))) {
-				if (targetPiece.getColor() == Color.WHITE) {
-					whiteCanCastleKingside = false;
-				} else {
-					blackCanCastleKingside = false;
-				}
-			}
-		}
+	    applyMove(move, movedPiece, from, to);
+	    return true;
+	}
+	private Move createStandardMove(Position from, Position to, Piece movedPiece) {
+	    Piece targetPiece = getPieceAt(to);
 
-	    // Apply move
+	    if (targetPiece == null) {
+	        castlingMoveHandler.updateCastlingRightsOnMove(this, movedPiece, from);
+	        return MoveFactory.normal(from, to, movedPiece);
+	    }
+
+	    if (targetPiece.getColor() != movedPiece.getColor()) {
+	        castlingMoveHandler.updateCastlingRightsOnMove(this, movedPiece, from);
+	        castlingMoveHandler.updateCastlingRightsOnRookCapture(this, targetPiece, to);
+	        return MoveFactory.capture(from, to, movedPiece, targetPiece);
+	    }
+
+	    return null;
+	}
+
+	private void applyMove(Move move, Piece movedPiece, Position from, Position to) {
 	    if (!move.isPromotion()) {
 	        setPieceAt(to, movedPiece);
 	        movedPiece.setPosition(to);
 	    }
-
 	    setPieceAt(from, null);
 	    moveHistory.add(move);
 	    switchTurn();
-	    return true;
+	}
+
+	public boolean canCastle(Position from, Position to, Color color) {
+	    CastlingRights rights = getCastlingRights();
+
+	    // White King-side castling: e1 -> g1
+	    if (from.equals(new Position("e1")) && to.equals(new Position("g1")) && color == Color.WHITE) {
+	        return rights.whiteCanCastleKingside() &&
+	               isRookAt(new Position("h1"), Color.WHITE);
+	    }
+
+	    // White Queen-side castling: e1 -> c1
+	    if (from.equals(new Position("e1")) && to.equals(new Position("c1")) && color == Color.WHITE) {
+	        return rights.whiteCanCastleQueenside() &&
+	               isRookAt(new Position("a1"), Color.WHITE);
+	    }
+
+	    // Black King-side castling: e8 -> g8
+	    if (from.equals(new Position("e8")) && to.equals(new Position("g8")) && color == Color.BLACK) {
+	        return rights.blackCanCastleKingside() &&
+	               isRookAt(new Position("h8"), Color.BLACK);
+	    }
+
+	    // Black Queen-side castling: e8 -> c8
+	    if (from.equals(new Position("e8")) && to.equals(new Position("c8")) && color == Color.BLACK) {
+	        return rights.blackCanCastleQueenside() &&
+	               isRookAt(new Position("a8"), Color.BLACK);
+	    }
+
+	    return false;
+	}
+
+	private boolean isRookAt(Position position, Color color) {
+	    Piece piece = getPieceAt(position);
+	    return piece != null &&
+	           piece.getColor() == color &&
+	           piece.getPieceType() == PieceType.ROOK;
 	}
 	
-	private boolean canCastle(Position kingFrom, Position kingTo, Color color) {
-	    int row = color == Color.WHITE ? 0 : 7;
-	    boolean kingside = kingTo.getCol() == 6;
-	    boolean queenside = kingTo.getCol() == 2;
-
-	    // Check castling rights
-	    if (kingside) {
-	        if ((color == Color.WHITE && !whiteCanCastleKingside) || 
-	            (color == Color.BLACK && !blackCanCastleKingside)) {
-	        	return false;
-	        }
-	    } else if (queenside) {
-	        if ((color == Color.WHITE && !whiteCanCastleQueenside) || 
-	            (color == Color.BLACK && !blackCanCastleQueenside)) {
-	        	return false;
-	        }
-	    } else {
-	        return false;
-	    }
-
-	    // Check if squares between king and rook are empty
-	    if (kingside) {
-	        if (getPieceAt(new Position(row, 5)) != null ||
-	            getPieceAt(new Position(row, 6)) != null) {
-	        	return false;
-	        }
-	    } else {
-	        if (getPieceAt(new Position(row, 1)) != null ||
-	            getPieceAt(new Position(row, 2)) != null ||
-	            getPieceAt(new Position(row, 3)) != null) {
-	        	return false;
-	        }
-	    }
-
-	    // Check that king is not in check or passing through check
-	    if (isSquareAttacked(kingFrom, color) || 
-	        isSquareAttacked(new Position(row, kingside ? 5 : 3), color) ||
-	        isSquareAttacked(kingTo, color)) {
-	    	return false;
-	    }
-
-	    // Check if rook is present and correct color
-	    Position rookPos = new Position(row, kingside ? 7 : 0);
-	    Piece rook = getPieceAt(rookPos);
-	    if (!(rook instanceof Rook) || rook.getColor() != color) {
-	    	return false;
-	    }
-
-	    return true;
+	public boolean isSquareAttacked(Position position, Color defenderColor) {
+	    return getActivePieces(defenderColor.opposite()).stream()
+	        .flatMap(piece -> AttackMapGenerator.generateAttackSquares(this, piece).stream())
+	        .anyMatch(position::equals);
 	}
 
-	
-	private boolean isSquareAttacked(Position position, Color defenderColor) {
-		// iterate over the opposing pieces and generate their legal attacks
-		return false;
-	}
-	
-	private void moveRookForCastling(Position kingFrom, Position kingTo) {
-	    int row = kingFrom.getRow();
-	    if (kingTo.getCol() == 6) { // Kingside
-	        Position rookFrom = new Position(row, 7);
-	        Position rookTo = new Position(row, 5);
-	        Piece rook = getPieceAt(rookFrom);
-	        setPieceAt(rookFrom, null);
-	        setPieceAt(rookTo, rook);
-	        if (rook != null) {
-	        	rook.setPosition(rookTo);
-	        }
-	    } else if (kingTo.getCol() == 2) { // Queenside
-	        Position rookFrom = new Position(row, 0);
-	        Position rookTo = new Position(row, 3);
-	        Piece rook = getPieceAt(rookFrom);
-	        setPieceAt(rookFrom, null);
-	        setPieceAt(rookTo, rook);
-	        if (rook != null) {
-	        	rook.setPosition(rookTo);
-	        }
-	    }
-	}
-
-	private void movePiece(Position from, Position to) {
-		Piece piece = getPieceAt(from);
-		setPieceAt(from, null);
-		setPieceAt(to, piece);
-		piece.setPosition(to);
-	}
-	
 	public List<Piece> getActivePieces(Predicate<Piece> filter) {
 		return Arrays.stream(board)
 			.flatMap(Arrays::stream)

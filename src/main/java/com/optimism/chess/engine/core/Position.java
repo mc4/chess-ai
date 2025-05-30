@@ -36,6 +36,10 @@ public final class Position {
 		char rank = (char) ('1' + row);
 		return "" + file + rank;
 	}
+	
+    public static Position of(int row, int col) {
+        return new Position(row, col);
+    }
 
 	public int getRow() {
 		return row;
