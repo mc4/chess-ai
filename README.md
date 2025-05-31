@@ -119,14 +119,14 @@ or directly in your IDE.
 src/
  └─ main/
      └─ java/
-         └─ com.optimism.chess.engine/
+         └─ dev.markconley.chess.engine/
              ├─ board/          # Board and Position classes
              ├─ pieces/         # Piece hierarchy: Pawn, King, Queen, etc.
              ├─ move/           # Move and related classes
              └─ core/           # Core enums and utilities (Color, etc.)
  └─ test/
      └─ java/
-         └─ com.optimism.chess.engine.board/  # BoardTest and related tests
+         └─ dev.markconley.chess.engine.board/  # BoardTest and related tests
 ```
 
 ---
