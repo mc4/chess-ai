@@ -75,7 +75,7 @@ The core class is `Board`, which represents the chessboard and controls game flo
 ```java
 Board board = new Board();  // initializes standard starting position
 
-boolean moveSuccessful = board.makeMove(new Position("e2"), new Position("e4"));
+boolean moveSuccessful = board.makeMove(Position.of("e2"), Position.of("e4"));
 
 if (moveSuccessful) {
     System.out.println("Move played successfully!");

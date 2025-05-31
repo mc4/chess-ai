@@ -16,6 +16,7 @@ public class CastlingMoveHandler implements SpecialMoveHandler {
 	public boolean canHandle(Piece piece, Position from, Position to) {
 		return piece instanceof King && Math.abs(from.getCol() - to.getCol()) == 2;
 	}
+	
     @Override
     public Move handle(Board board, Piece piece, Position from, Position to) {
         if (!isValidCastle(board, piece.getColor(), from, to)) {
@@ -30,7 +31,7 @@ public class CastlingMoveHandler implements SpecialMoveHandler {
     private boolean isValidCastle(Board board, Color color, Position from, Position to) {
         CastlingRights rights = board.getCastlingRights();
 
-        // Check castling rights
+        // Check castling rights	
         if (color == Color.WHITE) {
             if (to.equals(Position.of(0, 6)) && !rights.whiteCanCastleKingside()) {
             	return false;
@@ -98,9 +99,9 @@ public class CastlingMoveHandler implements SpecialMoveHandler {
 
 		if (piece instanceof Rook) {
 			int row = piece.getColor() == Color.WHITE ? 0 : 7;
-			if (from.equals(new Position(row, 0))) {
+			if (from.equals(Position.of(row, 0))) {
 				rights.disableQueenside(piece.getColor());
-			} else if (from.equals(new Position(row, 7))) {
+			} else if (from.equals(Position.of(row, 7))) {
 				rights.disableKingside(piece.getColor());
 			}
 		} else if (piece instanceof King) {
@@ -116,9 +117,9 @@ public class CastlingMoveHandler implements SpecialMoveHandler {
 		CastlingRights rights = board.getCastlingRights();
 		int row = capturedPiece.getColor() == Color.WHITE ? 0 : 7;
 
-		if (to.equals(new Position(row, 0))) {
+		if (to.equals(Position.of(row, 0))) {
 			rights.disableQueenside(capturedPiece.getColor());
-		} else if (to.equals(new Position(row, 7))) {
+		} else if (to.equals(Position.of(row, 7))) {
 			rights.disableKingside(capturedPiece.getColor());
 		}
 	}

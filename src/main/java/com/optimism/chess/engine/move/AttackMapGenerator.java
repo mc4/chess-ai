@@ -31,7 +31,7 @@ public class AttackMapGenerator {
 				int row = piece.getPosition().getRow() + direction.rowOffset();
 				int col = piece.getPosition().getCol() + direction.colOffset();
 				if (Position.isValid(row, col)) {
-					attacked.add(new Position(row, col));
+					attacked.add(Position.of(row, col));
 				}
 			}
 		} else if (piece instanceof Rook) {
@@ -101,7 +101,7 @@ public class AttackMapGenerator {
 			int row = king.getPosition().getRow() + direction.rowOffset();
 			int col = king.getPosition().getCol() + direction.colOffset();
 			if (Position.isValid(row, col)) {
-				attacked.add(new Position(row, col));
+				attacked.add(Position.of(row, col));
 			}
 		}
 		

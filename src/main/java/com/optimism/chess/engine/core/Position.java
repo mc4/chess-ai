@@ -37,6 +37,10 @@ public final class Position {
 		return "" + file + rank;
 	}
 	
+    public static Position of(String algebraic) {
+        return new Position(algebraic);
+    }
+	
     public static Position of(int row, int col) {
         return new Position(row, col);
     }

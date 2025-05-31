@@ -58,7 +58,7 @@ public class Board implements Copyable<Board> {
 	}
 	
 	public Board place(String square, Piece piece) {
-	    Position pos = new Position(square);
+	    Position pos = Position.of(square);
 	    piece.setPosition(pos);
 	    setPieceAt(pos, piece);
 	    return this;
@@ -190,27 +190,27 @@ public class Board implements Copyable<Board> {
 	    CastlingRights rights = getCastlingRights();
 
 	    // White King-side castling: e1 -> g1
-	    if (from.equals(new Position("e1")) && to.equals(new Position("g1")) && color == Color.WHITE) {
+	    if (from.equals(Position.of("e1")) && to.equals(Position.of("g1")) && color == Color.WHITE) {
 	        return rights.whiteCanCastleKingside() &&
-	               isRookAt(new Position("h1"), Color.WHITE);
+	               isRookAt(Position.of("h1"), Color.WHITE);
 	    }
 
 	    // White Queen-side castling: e1 -> c1
-	    if (from.equals(new Position("e1")) && to.equals(new Position("c1")) && color == Color.WHITE) {
+	    if (from.equals(Position.of("e1")) && to.equals(Position.of("c1")) && color == Color.WHITE) {
 	        return rights.whiteCanCastleQueenside() &&
-	               isRookAt(new Position("a1"), Color.WHITE);
+	               isRookAt(Position.of("a1"), Color.WHITE);
 	    }
 
 	    // Black King-side castling: e8 -> g8
-	    if (from.equals(new Position("e8")) && to.equals(new Position("g8")) && color == Color.BLACK) {
+	    if (from.equals(Position.of("e8")) && to.equals(Position.of("g8")) && color == Color.BLACK) {
 	        return rights.blackCanCastleKingside() &&
-	               isRookAt(new Position("h8"), Color.BLACK);
+	               isRookAt(Position.of("h8"), Color.BLACK);
 	    }
 
 	    // Black Queen-side castling: e8 -> c8
-	    if (from.equals(new Position("e8")) && to.equals(new Position("c8")) && color == Color.BLACK) {
+	    if (from.equals(Position.of("e8")) && to.equals(Position.of("c8")) && color == Color.BLACK) {
 	        return rights.blackCanCastleQueenside() &&
-	               isRookAt(new Position("a8"), Color.BLACK);
+	               isRookAt(Position.of("a8"), Color.BLACK);
 	    }
 
 	    return false;

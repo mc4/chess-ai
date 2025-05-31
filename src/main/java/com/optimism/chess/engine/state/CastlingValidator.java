@@ -19,17 +19,17 @@ public class CastlingValidator {
 	private static boolean hasCastlingRights(Board board, Position from, Position to, Color color) {
 		CastlingRights rights = board.getCastlingRights();
 		if (color == Color.WHITE) {
-			if (from.equals(new Position("e1")) && to.equals(new Position("g1"))) {
+			if (from.equals(Position.of("e1")) && to.equals(Position.of("g1"))) {
 				return rights.whiteCanCastleKingside();
 			}
-			if (from.equals(new Position("e1")) && to.equals(new Position("c1"))) {
+			if (from.equals(Position.of("e1")) && to.equals(Position.of("c1"))) {
 				return rights.whiteCanCastleQueenside();
 			}
 		} else {
-			if (from.equals(new Position("e8")) && to.equals(new Position("g8"))) {
+			if (from.equals(Position.of("e8")) && to.equals(Position.of("g8"))) {
 				return rights.blackCanCastleKingside();
 			}
-			if (from.equals(new Position("e8")) && to.equals(new Position("c8"))) {
+			if (from.equals(Position.of("e8")) && to.equals(Position.of("c8"))) {
 				return rights.blackCanCastleQueenside();
 			}
 		}
@@ -38,18 +38,18 @@ public class CastlingValidator {
 
 	private static boolean isRookInPlace(Board board, Position from, Position to, Color color) {
 		if (color == Color.WHITE) {
-			if (to.equals(new Position("g1"))) {
-				return isRookAt(board, new Position("h1"), Color.WHITE);
+			if (to.equals(Position.of("g1"))) {
+				return isRookAt(board, Position.of("h1"), Color.WHITE);
 			}
-			if (to.equals(new Position("c1"))) {
-				return isRookAt(board, new Position("a1"), Color.WHITE);
+			if (to.equals(Position.of("c1"))) {
+				return isRookAt(board, Position.of("a1"), Color.WHITE);
 			}
 		} else {
-			if (to.equals(new Position("g8"))) {
-				return isRookAt(board, new Position("h8"), Color.BLACK);
+			if (to.equals(Position.of("g8"))) {
+				return isRookAt(board, Position.of("h8"), Color.BLACK);
 			}
-			if (to.equals(new Position("c8"))) {
-				return isRookAt(board, new Position("a8"), Color.BLACK);
+			if (to.equals(Position.of("c8"))) {
+				return isRookAt(board, Position.of("a8"), Color.BLACK);
 			}
 		}
 		return false;
@@ -66,7 +66,7 @@ public class CastlingValidator {
 		int endCol = Math.max(from.getCol(), to.getCol());
 
 		for (int col = startCol + 1; col < endCol; col++) {
-			if (board.getPieceAt(new Position(row, col)) != null) {
+			if (board.getPieceAt(Position.of(row, col)) != null) {
 				return false;
 			}
 		}

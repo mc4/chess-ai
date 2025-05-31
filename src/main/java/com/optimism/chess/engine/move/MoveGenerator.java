@@ -106,8 +106,8 @@ public class MoveGenerator {
 		}
 
 		Position[] captures = { 
-				new Position(row + 1, col - 1), 
-				new Position(row + 1, col + 1) 
+				Position.of(row + 1, col - 1), 
+				Position.of(row + 1, col + 1) 
 		};
 
 		for (Position target : captures) {
@@ -138,8 +138,8 @@ public class MoveGenerator {
 		}
 
 	    Position[] captures = {
-	        new Position(row - 1, col - 1),
-	        new Position(row - 1, col + 1)
+	        Position.of(row - 1, col - 1),
+	        Position.of(row - 1, col + 1)
 	    };
 
 	    for (Position target : captures) {
