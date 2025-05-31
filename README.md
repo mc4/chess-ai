@@ -26,7 +26,6 @@ This project implements the core logic of a chess engine written in Java. It man
 - Piece movement and validation
 - Move history tracking
 - Basic game rules enforcement (turns, captures)
-- Planned features: castling, en passant, promotion, undo moves
 
 The engine aims to provide a solid foundation for building a complete chess AI or GUI client.
 
