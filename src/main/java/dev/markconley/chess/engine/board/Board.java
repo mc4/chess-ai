@@ -167,7 +167,7 @@ public class Board implements Copyable<Board> {
 	    	return false;
 	    }
 
-	    this.lastMove = new LastMove(movedPiece, from, to);
+	    recordLastMove(movedPiece, from, to);
 	    applyMove(move, movedPiece, from, to);
 	    return true;
 	}
