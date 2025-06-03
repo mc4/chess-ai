@@ -159,6 +159,7 @@ public class Board implements Copyable<Board> {
 	    applyMove(move, movedPiece, from, to);
 	    return true;
 	}
+	
 	private Move createStandardMove(Position from, Position to, Piece movedPiece) {
 	    Piece targetPiece = getPieceAt(to);
 
