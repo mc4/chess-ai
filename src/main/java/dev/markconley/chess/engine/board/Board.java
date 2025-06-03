@@ -10,6 +10,7 @@ import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Copyable;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.AttackMapGenerator;
+import dev.markconley.chess.engine.move.LastMove;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveFactory;
 import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
@@ -32,6 +33,8 @@ public class Board implements Copyable<Board> {
 	private Piece[][] board;
 	private Color currentTurn;
 	private List<Move> moveHistory;
+	private LastMove lastMove;
+	
 	private CastlingRights castlingRights;
     private final CastlingMoveHandler castlingMoveHandler = new CastlingMoveHandler();
     
@@ -112,6 +115,14 @@ public class Board implements Copyable<Board> {
 	public CastlingRights getCastlingRights() {
 	    return castlingRights;
 	}
+	
+	public LastMove getLastMove() {
+	    return lastMove;
+	}
+	
+	public void recordLastMove(Piece piece, Position from, Position to) {
+	    this.lastMove = new LastMove(piece, from, to);
+	}
 
 	public Piece getPieceAt(Position position) {
 		return board[position.getRow()][position.getCol()];
@@ -156,6 +167,7 @@ public class Board implements Copyable<Board> {
 	    	return false;
 	    }
 
+	    this.lastMove = new LastMove(movedPiece, from, to);
 	    applyMove(move, movedPiece, from, to);
 	    return true;
 	}
