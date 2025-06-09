@@ -50,7 +50,8 @@ public class Board implements Copyable<Board> {
 		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
 		this.currentTurn = Color.WHITE;
 		this.moveHistory = new ArrayList<>();
-
+		this.castlingRights = new CastlingRights();
+		
 		if (!skipSetup) {
 			setupInitialPosition();
 		}
@@ -260,7 +261,7 @@ public class Board implements Copyable<Board> {
 	public List<Move> getMoveHistory() {
 	    return List.copyOf(moveHistory); 
 	}
-	
+
 	@Override
 	public Board copy() {
 		Board newBoard = new Board();
@@ -277,13 +278,33 @@ public class Board implements Copyable<Board> {
 	}
 
 	public void printBoard() {
-		for (int row = 0; row < 8; row++) {
+		final String separator = "===============================";
+		System.out.println(separator);
+		System.out.println("  a b c d e f g h");
+		for (int row = 7; row >= 0; row--) {
+			System.out.print((row + 1) + " ");
 			for (int col = 0; col < 8; col++) {
-				Piece piece = board[row][col];
-				System.out.print((piece == null ? "." : piece.toString()) + " ");
+				Piece piece = getPieceAt(Position.of(row, col));
+				String symbol = piece == null ? "." : getSymbol(piece);
+				System.out.print(symbol + " ");
 			}
-			System.out.println();
+			System.out.println(row + 1);
 		}
+		System.out.println("  a b c d e f g h");
+		System.out.println(separator);
 	}
+
+	private String getSymbol(Piece piece) {
+		String base = switch (piece.getPieceType()) {
+			case KING -> "K";
+			case QUEEN -> "Q";
+			case ROOK -> "R";
+			case BISHOP -> "B";
+			case KNIGHT -> "N";
+			case PAWN -> "P";
+		};
+		return piece.getColor() == Color.WHITE ? base : base.toLowerCase();
+	}
+
 	
 }
