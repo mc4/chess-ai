@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
@@ -127,10 +126,12 @@ class BoardTest {
 	    Piece whiteQueen = new Queen(Color.WHITE);
 	    whiteQueen.setPosition(from);
 	    board.setPieceAt(from, whiteQueen);
+	    board.setPieceAt(Position.of("g1"), new King(Color.WHITE));
 
 	    Piece blackPawn = new Pawn(Color.BLACK);
 	    blackPawn.setPosition(to);
 	    board.setPieceAt(to, blackPawn);
+	    board.setPieceAt(Position.of("g8"), new King(Color.BLACK));
 
 	    // Make the move
 	    boolean result = board.makeMove(from, to);

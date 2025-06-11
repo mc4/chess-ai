@@ -3,7 +3,6 @@ package dev.markconley.chess.engine.board;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 import dev.markconley.chess.engine.core.Color;
@@ -17,6 +16,8 @@ import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
 import dev.markconley.chess.engine.move.handler.EnPassantMoveHandler;
 import dev.markconley.chess.engine.move.handler.PromotionMoveHandler;
 import dev.markconley.chess.engine.move.handler.SpecialMoveHandler;
+import dev.markconley.chess.engine.move.promotion.PromotionStrategy;
+import dev.markconley.chess.engine.move.promotion.QueenPromotionStrategy;
 import dev.markconley.chess.engine.pieces.Bishop;
 import dev.markconley.chess.engine.pieces.King;
 import dev.markconley.chess.engine.pieces.Knight;
@@ -26,6 +27,7 @@ import dev.markconley.chess.engine.pieces.PieceType;
 import dev.markconley.chess.engine.pieces.Queen;
 import dev.markconley.chess.engine.pieces.Rook;
 import dev.markconley.chess.engine.state.CastlingRights;
+import dev.markconley.chess.engine.state.GameStateEvaluator;
 
 public class Board implements Copyable<Board> {
 
@@ -146,31 +148,44 @@ public class Board implements Copyable<Board> {
 	}
 	
 	public boolean makeMove(Position from, Position to) {
-	    Piece movedPiece = getPieceAt(from);
-	    if (movedPiece == null || movedPiece.getColor() != currentTurn) {
-	        return false;
+	    return makeMove(from, to, new QueenPromotionStrategy());
+	}
+	
+	public boolean makeMove(Position from, Position to, PromotionStrategy promotionStrategy) {
+		Piece piece = getPieceAt(from);
+		if (piece == null || piece.getColor() != currentTurn) {
+			return false;
+		}
+
+		Move move = generateMove(from, to, promotionStrategy);
+		if (move == null || !isMoveLegal(move, currentTurn)) {
+			return false;
+		}
+
+		applyMove(move);
+		return true;
+	}
+	
+	public Move generateMove(Position from, Position to, PromotionStrategy promotionStrategy) {
+	    Piece piece = getPieceAt(from);
+	    if (piece == null || piece.getColor() != currentTurn) {
+	        return null;
 	    }
 
-	    final List<SpecialMoveHandler> specialMoveHandlers = List.of(
+	    List<SpecialMoveHandler> specialHandlers = List.of(
 	        new CastlingMoveHandler(),
 	        new EnPassantMoveHandler(),
-	        new PromotionMoveHandler()
+	        new PromotionMoveHandler(promotionStrategy)
 	    );
 
-	    Move move = specialMoveHandlers.stream()
-	        .filter(handler -> handler.canHandle(movedPiece, from, to))
-	        .map(handler -> handler.handle(this, movedPiece, from, to))
-	        .filter(Objects::nonNull)
-	        .findFirst()
-	        .orElseGet(() -> createStandardMove(from, to, movedPiece));
-
-	    if (move == null) {
-	    	return false;
+	    for (SpecialMoveHandler handler : specialHandlers) {
+	        if (handler.canHandle(piece, from, to)) {
+	            Move move = handler.handle(this, piece, from, to);
+	            if (move != null) return move;
+	        }
 	    }
 
-	    recordLastMove(movedPiece, from, to);
-	    applyMove(move, movedPiece, from, to);
-	    return true;
+	    return createStandardMove(from, to, piece);
 	}
 	
 	private Move createStandardMove(Position from, Position to, Piece movedPiece) {
@@ -190,15 +205,45 @@ public class Board implements Copyable<Board> {
 	    return null;
 	}
 
-	private void applyMove(Move move, Piece movedPiece, Position from, Position to) {
-	    if (!move.isPromotion()) {
-	        setPieceAt(to, movedPiece);
-	        movedPiece.setPosition(to);
-	    }
+	public void applyMove(Move move) {
+	    Piece movedPiece = move.movedPiece();
+	    Position from = move.from();
+	    Position to = move.to();
+
 	    setPieceAt(from, null);
-	    moveHistory.add(move);
+	    setPieceAt(to, movedPiece);
+	    movedPiece.setPosition(to);
+
+	    if (move.isEnPassant()) {
+	        Position capturedPawnPos = new Position(from.getRow(), to.getCol());
+	        setPieceAt(capturedPawnPos, null);
+	    }
+
+	    if (move.isCastling()) {
+	        if (to.getCol() == 6) {
+	            Piece rook = getPieceAt(new Position(from.getRow(), 7));
+	            setPieceAt(new Position(from.getRow(), 5), rook);
+	            setPieceAt(new Position(from.getRow(), 7), null);
+	            rook.setPosition(new Position(from.getRow(), 5));
+	        } else if (to.getCol() == 2) {
+	            Piece rook = getPieceAt(new Position(from.getRow(), 0));
+	            setPieceAt(new Position(from.getRow(), 3), rook);
+	            setPieceAt(new Position(from.getRow(), 0), null);
+	            rook.setPosition(new Position(from.getRow(), 3));
+	        }
+	    }
+
+	    if (move.isPromotion()) {
+	        Piece promoted = move.promotionPiece();
+	        promoted.setPosition(to);
+	        setPieceAt(to, promoted);
+	    }
+
+	    // TODO: update castling rights
+	    recordLastMove(movedPiece, from, to);
 	    switchTurn();
 	}
+
 
 	public boolean canCastle(Position from, Position to, Color color) {
 	    CastlingRights rights = getCastlingRights();
@@ -241,6 +286,19 @@ public class Board implements Copyable<Board> {
 	    return getActivePieces(defenderColor.opposite()).stream()
 	        .flatMap(piece -> AttackMapGenerator.generateAttackSquares(this, piece).stream())
 	        .anyMatch(position::equals);
+	}
+	
+	public boolean isMoveLegal(Move move, Color currentTurn) {
+		Board clone = this.copy();
+		Position from = move.from();
+		Piece movingPiece = clone.getPieceAt(from);
+
+		if (movingPiece == null || movingPiece.getColor() != currentTurn) {
+			return false;
+		}
+
+		clone.applyMove(move);
+		return GameStateEvaluator.isInCheck(clone, currentTurn);
 	}
 
 	public List<Piece> getActivePieces(Predicate<Piece> filter) {

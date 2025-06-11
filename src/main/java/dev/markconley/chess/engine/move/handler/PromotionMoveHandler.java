@@ -5,11 +5,17 @@ import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveFactory;
+import dev.markconley.chess.engine.move.promotion.PromotionStrategy;
 import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
-import dev.markconley.chess.engine.pieces.Queen;
 
 public class PromotionMoveHandler implements SpecialMoveHandler {
+	
+    private final PromotionStrategy strategy;
+
+    public PromotionMoveHandler(PromotionStrategy strategy) {
+        this.strategy = strategy;
+    }
 
 	@Override
 	public boolean canHandle(Piece piece, Position from, Position to) {
@@ -25,8 +31,7 @@ public class PromotionMoveHandler implements SpecialMoveHandler {
 
 	@Override
 	public Move handle(Board board, Piece piece, Position from, Position to) {
-		// Default promotion to queen for now
-		Piece promoted = new Queen(piece.getColor());
+		Piece promoted = strategy.choosePromotion(piece.getColor());
 		promoted.setPosition(to);
 
 		board.setPieceAt(to, promoted);
