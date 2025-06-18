@@ -113,7 +113,7 @@ public class MoveGenerator {
 		for (Position target : captures) {
 			if (Position.isValid(target)) {
 				Piece targetPiece = board.getPieceAt(target);
-				if (target != null && targetPiece.getColor() == Color.BLACK) {
+				if (targetPiece != null && targetPiece.getColor() == Color.BLACK) {
 					moves.add(MoveFactory.capture(from, target, piece, targetPiece));
 				}
 			}

@@ -161,8 +161,12 @@ public class Board implements Copyable<Board> {
 		if (move == null || !isMoveLegal(move, currentTurn)) {
 			return false;
 		}
-
+		
 		applyMove(move);
+		
+	    recordLastMove(piece, from, to);
+	    moveHistory.add(move);
+	    switchTurn();
 		return true;
 	}
 	
@@ -181,7 +185,9 @@ public class Board implements Copyable<Board> {
 	    for (SpecialMoveHandler handler : specialHandlers) {
 	        if (handler.canHandle(piece, from, to)) {
 	            Move move = handler.handle(this, piece, from, to);
-	            if (move != null) return move;
+	            if (move != null) {
+	            	return move;
+	            }
 	        }
 	    }
 
@@ -189,6 +195,14 @@ public class Board implements Copyable<Board> {
 	}
 	
 	private Move createStandardMove(Position from, Position to, Piece movedPiece) {
+
+		if (!movedPiece.getPossibleMoves(this)
+				.stream()
+				.map(Move::to)
+				.anyMatch(to::equals)) {
+			return null;
+		}
+		
 	    Piece targetPiece = getPieceAt(to);
 
 	    if (targetPiece == null) {
@@ -239,11 +253,7 @@ public class Board implements Copyable<Board> {
 	        setPieceAt(to, promoted);
 	    }
 
-	    // TODO: update castling rights
-	    recordLastMove(movedPiece, from, to);
-	    switchTurn();
 	}
-
 
 	public boolean canCastle(Position from, Position to, Color color) {
 	    CastlingRights rights = getCastlingRights();
@@ -288,17 +298,43 @@ public class Board implements Copyable<Board> {
 	        .anyMatch(position::equals);
 	}
 	
+	/**
+	 * 
+	 * @param move
+	 * @param currentTurn
+	 * 
+	 * A move is legal if:
+	 *
+	 * 1. The piece at the from square belongs to the player whose turn it is.
+	 * 2. The piece can move from from to to based on movement rules (including special rules: castling, en passant, promotion).
+	 * 3. The destination square does not contain a friendly piece.
+	 * 4. The move does not leave the moving player in check.
+	 * 
+	 * @return
+	 */
 	public boolean isMoveLegal(Move move, Color currentTurn) {
-		Board clone = this.copy();
-		Position from = move.from();
-		Piece movingPiece = clone.getPieceAt(from);
+	    Position from = move.from();
+	    Position to = move.to();
+	    Piece movingPiece = getPieceAt(from);
 
-		if (movingPiece == null || movingPiece.getColor() != currentTurn) {
-			return false;
-		}
+	    // Rule 1: Must be a piece of current turn
+	    if (movingPiece == null || movingPiece.getColor() != currentTurn) {
+	        return false;
+	    }
 
-		clone.applyMove(move);
-		return GameStateEvaluator.isInCheck(clone, currentTurn);
+	    // Rule 2 and 3: Move must be in the piece's possible moves
+	    List<Move> legalMoves = movingPiece.getPossibleMoves(this).stream()
+	        .filter(m -> m.to().equals(to))
+	        .toList();
+
+	    if (legalMoves.isEmpty()) {
+	        return false;
+	    }
+
+	    // Rule 4: Simulate and check for check
+	    Board clone = this.copy();
+	    clone.applyMove(move);
+	    return !GameStateEvaluator.isInCheck(clone, currentTurn);
 	}
 
 	public List<Piece> getActivePieces(Predicate<Piece> filter) {
@@ -322,7 +358,7 @@ public class Board implements Copyable<Board> {
 
 	@Override
 	public Board copy() {
-		Board newBoard = new Board();
+		Board newBoard = Board.emptyBoard();
 		newBoard.currentTurn = this.currentTurn;
 		for (int row = 0; row < 8; row++) {
 			for (int col = 0; col < 8; col++) {
@@ -334,24 +370,7 @@ public class Board implements Copyable<Board> {
 		}
 		return newBoard;
 	}
-
-	public void printBoard() {
-		final String separator = "===============================";
-		System.out.println(separator);
-		System.out.println("  a b c d e f g h");
-		for (int row = 7; row >= 0; row--) {
-			System.out.print((row + 1) + " ");
-			for (int col = 0; col < 8; col++) {
-				Piece piece = getPieceAt(Position.of(row, col));
-				String symbol = piece == null ? "." : getSymbol(piece);
-				System.out.print(symbol + " ");
-			}
-			System.out.println(row + 1);
-		}
-		System.out.println("  a b c d e f g h");
-		System.out.println(separator);
-	}
-
+	
 	private String getSymbol(Piece piece) {
 		String base = switch (piece.getPieceType()) {
 			case KING -> "K";
@@ -362,6 +381,34 @@ public class Board implements Copyable<Board> {
 			case PAWN -> "P";
 		};
 		return piece.getColor() == Color.WHITE ? base : base.toLowerCase();
+	}
+
+	private String getBoardString() {
+		StringBuilder sb = new StringBuilder();
+		final String separator = "===============================";
+		sb.append(separator).append("\n");
+		sb.append("  a b c d e f g h\n");
+		for (int row = 7; row >= 0; row--) {
+			sb.append(row + 1).append(" ");
+			for (int col = 0; col < 8; col++) {
+				Piece piece = getPieceAt(Position.of(row, col));
+				String symbol = piece == null ? "." : getSymbol(piece);
+				sb.append(symbol).append(" ");
+			}
+			sb.append(row + 1).append("\n");
+		}
+		sb.append("  a b c d e f g h\n");
+		sb.append(separator);
+		return sb.toString();
+	}
+
+	public void printBoard() {
+		System.out.println(getBoardString());
+	}
+
+	@Override
+	public String toString() {
+		return getBoardString();
 	}
 
 	

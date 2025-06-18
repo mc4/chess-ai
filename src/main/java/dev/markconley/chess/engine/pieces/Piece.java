@@ -29,10 +29,16 @@ public abstract class Piece implements Copyable<Piece> {
 	}
 
 	public Position getPosition() {
+		if (position == null) {
+			throw new IllegalStateException("Position not set for piece: " + this);
+		}
 		return position;
 	}
 
 	public void setPosition(Position position) {
+		if (position == null) {
+			throw new IllegalArgumentException("Cannot set null position on piece: " + this);
+		}
 		this.position = position;
 	}
 

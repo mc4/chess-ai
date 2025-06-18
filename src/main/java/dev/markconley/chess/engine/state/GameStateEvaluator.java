@@ -1,5 +1,7 @@
 package dev.markconley.chess.engine.state;
 
+import java.util.Objects;
+
 import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
@@ -38,8 +40,9 @@ public class GameStateEvaluator {
 	}
 
     private static Position findKingPosition(Board board, Color color) {
-        return board.getActivePieces(color)
+    	return board.getActivePieces(color)
         		.stream()
+        		.filter(Objects::nonNull)
                 .filter(p -> p.getPieceType() == PieceType.KING)
                 .map(Piece::getPosition)
                 .findFirst()

@@ -85,7 +85,9 @@ class BoardTest {
 	@Test
 	void testSimplePawnMove() {
 	    Board board = Board.emptyBoard()
-	    		.place("e2", new Pawn(Color.WHITE));
+	    		.place("e2", new Pawn(Color.WHITE))
+	    		.place("e1", new King(Color.WHITE))
+	    		.place("e8", new King(Color.BLACK));
 
 	    boolean result = board.makeMove(new Position("e2"), new Position("e4"));
 
@@ -96,6 +98,9 @@ class BoardTest {
 
 	@Test
 	void testMakeNormalMove() {
+		board.place("e1", new King(Color.WHITE))
+			 .place("e8", new King(Color.BLACK));
+		
 	    // Place a white queen at d4 (3, 3) 
 	    Position from = new Position(3, 3); // d4
 	    Position to = new Position(5, 3);   // d6
@@ -119,19 +124,22 @@ class BoardTest {
 
 	@Test
 	void testMakeCaptureMove() {
-	    // Place a white queen at d4 (3, 3) and a black pawn at d6 (5, 3)
-	    Position from = new Position(3, 3); // d4
-	    Position to = new Position(5, 3);   // d6
+	    Position from = Position.of("d4"); 
+	    Position to = Position.of("d6");  
 
 	    Piece whiteQueen = new Queen(Color.WHITE);
 	    whiteQueen.setPosition(from);
 	    board.setPieceAt(from, whiteQueen);
-	    board.setPieceAt(Position.of("g1"), new King(Color.WHITE));
+	    King whiteKing = new King(Color.WHITE);
+	    whiteKing.setPosition(Position.of("g1"));
+	    board.setPieceAt(Position.of("g1"), whiteKing);
 
 	    Piece blackPawn = new Pawn(Color.BLACK);
 	    blackPawn.setPosition(to);
 	    board.setPieceAt(to, blackPawn);
-	    board.setPieceAt(Position.of("g8"), new King(Color.BLACK));
+	    King blackKing = new King(Color.BLACK);
+	    blackKing.setPosition(Position.of("g8"));
+	    board.setPieceAt(Position.of("g8"), blackKing);
 
 	    // Make the move
 	    boolean result = board.makeMove(from, to);
