@@ -9,6 +9,8 @@ import java.util.function.BiFunction;
 import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
+import dev.markconley.chess.engine.move.enpassant.DefaultEnPassantStrategy;
+import dev.markconley.chess.engine.move.enpassant.EnPassantStrategy;
 import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
 import dev.markconley.chess.engine.pieces.Bishop;
 import dev.markconley.chess.engine.pieces.Direction;
@@ -20,6 +22,8 @@ import dev.markconley.chess.engine.pieces.Queen;
 import dev.markconley.chess.engine.pieces.Rook;
 
 public class MoveGenerator {
+	
+	private final EnPassantStrategy enPassantStrategy = new DefaultEnPassantStrategy();
 
 	public static List<Move> generateSlidingMoves(Board board, Piece piece, Direction[] directions) {
 	    return Arrays.stream(directions)

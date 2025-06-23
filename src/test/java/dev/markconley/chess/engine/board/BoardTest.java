@@ -231,6 +231,69 @@ class BoardTest {
 	@Test
 	void testEnPassantMove() {
 	}
+	
+	@Test
+	void testEnPassantNotAllowedAfterDelay() {
+		Piece whitePawn = new Pawn(Color.WHITE);
+		Piece blackPawn = new Pawn(Color.BLACK);
+		
+		Position e5 = Position.of("e5");
+		Position d7 = Position.of("d7");
+
+		board.setPieceAt(e5, whitePawn);
+		board.setPieceAt(d7, blackPawn);
+		
+		whitePawn.setPosition(e5);
+		blackPawn.setPosition(d7);
+		board.setCurrentTurn(Color.BLACK);
+
+		// Black plays d7 - d5
+		assertTrue(board.makeMove(Position.of("d7"), Position.of("d5")));
+
+		// White plays a "waiting" move (we'll fake a turn swap)
+		board.setCurrentTurn(Color.WHITE);
+		board.switchTurn(); // simulate any move
+
+		// Now try en passant — should fail
+		board.setCurrentTurn(Color.WHITE);
+		assertFalse(board.makeMove(Position.of("e5"), Position.of("d6")), "En passant must be done immediately");
+	}
+
+	@Test
+	void testEnPassantTargetSquareSetCorrectly() {
+		Piece blackPawn = new Pawn(Color.BLACK);
+		board.setPieceAt(Position.of("e7"), blackPawn);
+		blackPawn.setPosition(Position.of("e7"));
+		board.setCurrentTurn(Color.BLACK);
+
+		assertTrue(board.makeMove(Position.of("e7"), Position.of("e5")));
+
+		Position expectedTarget = Position.of("e6");
+		assertEquals(expectedTarget, board.getEnPassantTarget(), "En passant square should be set to e6");
+	}
+
+	@Test
+	void testEnPassantFailsWhenNoTarget() {
+		Piece whitePawn = new Pawn(Color.WHITE);
+		Piece blackPawn = new Pawn(Color.BLACK);
+
+		// White pawn on e5
+		Position e5 = Position.of("e5");
+		whitePawn.setPosition(e5);
+		board.setPieceAt(e5, whitePawn);
+
+		// Black pawn pushed to d5 one or more moves ago (simulate no en passant target)
+		Position d5 = Position.of("d5");
+		blackPawn.setPosition(d5);
+		board.setPieceAt(d5, blackPawn);
+
+		board.setCurrentTurn(Color.WHITE);
+
+		// Attempt en passant: e5 - d6 (diagonal empty square with no target)
+		Position d6 = Position.of("d6");
+		assertFalse(board.makeMove(e5, d6), "Should not allow en passant when not set up");
+	}
+	
 
 	@Disabled("Not implemented yet")
 	@Test

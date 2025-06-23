@@ -151,6 +151,10 @@ public class Board implements Copyable<Board> {
 	public Color getCurrentTurn() {
 		return currentTurn;
 	}
+	
+	public void setCurrentTurn(Color color) {
+		this.currentTurn = color;
+	}
 
 	public void switchTurn() {
 		currentTurn = currentTurn.opposite();
