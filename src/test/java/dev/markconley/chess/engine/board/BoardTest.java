@@ -15,10 +15,12 @@ import org.junit.jupiter.api.Test;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
+import dev.markconley.chess.engine.move.MoveFactory;
 import dev.markconley.chess.engine.pieces.King;
 import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.Queen;
+import dev.markconley.chess.engine.pieces.Rook;
 
 class BoardTest {
 
@@ -26,7 +28,9 @@ class BoardTest {
 
 	@BeforeEach
 	void setUp() {
-		board = Board.emptyBoard();
+		board = Board.emptyBoard()	                
+				.place("e1", new King(Color.WHITE))
+                .place("e8", new King(Color.BLACK));
 	}
 
 	// Basic Setup & State
@@ -80,15 +84,13 @@ class BoardTest {
 	    assertEquals(Color.WHITE, retrieved.getColor(), "Piece color should be white");
 	    assertTrue(retrieved instanceof Queen, "Piece should be instance of Queen");
 	}
+	
 	// Move Execution
 	
 	@Test
 	void testSimplePawnMove() {
-	    Board board = Board.emptyBoard()
-	    		.place("e2", new Pawn(Color.WHITE))
-	    		.place("e1", new King(Color.WHITE))
-	    		.place("e8", new King(Color.BLACK));
-
+	    board.place("e2", new Pawn(Color.WHITE));
+	    
 	    boolean result = board.makeMove(new Position("e2"), new Position("e4"));
 
 	    assertTrue(result);
@@ -173,15 +175,57 @@ class BoardTest {
 
 	@Test
 	void testMoveUpdatesTurn() {
-		
+	    Position from = Position.of("e2");
+	    Position to = Position.of("e4");
+	    
+	    Piece whitePawn = new Pawn(Color.WHITE);
+	    whitePawn.setPosition(from);
+	    board.setPieceAt(from, whitePawn);
+
+	    // Initially, it should be White's turn
+	    assertEquals(Color.WHITE, board.getCurrentTurn());
+
+	    // Make the move
+	    Move move = MoveFactory.normal(from, to, whitePawn);
+	    board.makeMove(move.from(), move.to());
+
+	    // After the move, it should be Black's turn
+	    assertEquals(Color.BLACK, board.getCurrentTurn());
 	}
 	
 	// Special Moves
 
-	@Disabled("Not implemented yet")
 	@Test
-	void testCastlingMove() {
+	void testCastlingMoveWhiteCastleKingSide() {
+	    board.clearBoard();
+	    Piece blackKing = new King(Color.BLACK);
+	    blackKing.setPosition(Position.of("e8"));
+	    board.setPieceAt(Position.of("e8"), blackKing);
+
+	    Position kingStart = Position.of("e1");
+	    Position rookStart = Position.of("h1");
+	    Position kingEnd = Position.of("g1");
+	    Position rookEnd = Position.of("f1");
+
+	    King whiteKing = new King(Color.WHITE);
+	    Rook whiteRook = new Rook(Color.WHITE);
+	    whiteKing.setPosition(kingStart);
+	    whiteRook.setPosition(rookStart);
+
+	    board.setPieceAt(kingStart, whiteKing);
+	    board.setPieceAt(rookStart, whiteRook);
+
+	    Move castlingMove = MoveFactory.castle(kingStart, kingEnd, whiteKing);
+	    boolean moveSuccessful = board.makeMove(castlingMove.from(), castlingMove.to());
+
+	    assertTrue(moveSuccessful, "Castling was not successful");
+	    assertTrue(board.getPieceAt(kingEnd) instanceof King);
+	    assertTrue(board.getPieceAt(rookEnd) instanceof Rook);
+	    assertNull(board.getPieceAt(kingStart));
+	    assertNull(board.getPieceAt(rookStart));
+	    assertEquals(Color.BLACK, board.getCurrentTurn());
 	}
+
 
 	@Disabled("Not implemented yet")
 	@Test

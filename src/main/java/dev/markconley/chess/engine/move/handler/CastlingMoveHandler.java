@@ -23,77 +23,71 @@ public class CastlingMoveHandler implements SpecialMoveHandler {
         	return null;
         }
 
-        disableCastlingRightsAfterCastling(board, piece.getColor());
-        moveRookDuringCastling(board, from, to);
+//        disableCastlingRightsAfterCastling(board, piece.getColor());
+//        moveRookDuringCastling(board, from, to);
         return MoveFactory.castle(from, to, piece);
     }
 
     private boolean isValidCastle(Board board, Color color, Position from, Position to) {
-        CastlingRights rights = board.getCastlingRights();
-
-        // Check castling rights	
-        if (color == Color.WHITE) {
-            if (to.equals(Position.of(0, 6)) && !rights.whiteCanCastleKingside()) {
-            	return false;
-            }
-            if (to.equals(Position.of(0, 2)) && !rights.whiteCanCastleQueenside()) {
-            	return false;
-            }
-        } else {
-            if (to.equals(Position.of(7, 6)) && !rights.blackCanCastleKingside()) {
-            	return false;
-            }
-            if (to.equals(Position.of(7, 2)) && !rights.blackCanCastleQueenside()) {
-            	return false;
-            }
-        }
-
-        int row = color == Color.WHITE ? 0 : 7;
-
-        // Define squares king moves through (and ends on)
-        int startCol = 4;
-        int endCol = to.getCol();
-        int step = (endCol - startCol) / Math.abs(endCol - startCol); // +1 or -1
-
-        // Check path clearance between king and rook
-        for (int col = startCol + step; col != (endCol + step); col += step) {
-            Position pos = Position.of(row, col);
-            if (board.getPieceAt(pos) != null) {
-            	return false;  // Path not clear
-            }
-        }
-
-        // Check king not currently in check
-        if (board.isSquareAttacked(Position.of(row, startCol), color.opposite())) {
-        	return false;
-        }
-
-        // Check king does not pass through or land on attacked squares
-        // King moves two steps; check both intermediate and target squares
-        for (int col = startCol + step; col != endCol + step; col += step) {
-            Position pos = Position.of(row, col);
-            if (board.isSquareAttacked(pos, color.opposite())) {
-            	return false;
-            }
-        }
-
-        return true;
-    }
-
+        
+    boolean hasCastlingRights =  hasCastlingRights(board, color, to);
+    boolean isPathClear = isPathClear(board, color, from, to);
+    boolean isKingNotInCheck = isKingNotInCheck(board, color, from);
+    boolean areCastlingSquaresSafe = areCastlingSquaresSafe(board, color, from, to);
     
-    private void disableCastlingRightsAfterCastling(Board board, Color color) {
-    	board.getCastlingRights().disableAll(color);;
+    return hasCastlingRights && isPathClear && isKingNotInCheck && areCastlingSquaresSafe; 
     }
 
-	private void moveRookDuringCastling(Board board, Position from, Position to) {
-		Piece rook = board.getPieceAt(from);
-		board.setPieceAt(to, rook);
-		if (rook != null) {
-			rook.setPosition(to);
+	private boolean hasCastlingRights(Board board, Color color, Position to) {
+		CastlingRights rights = board.getCastlingRights();
+
+		if (color == Color.WHITE) {
+			if (to.equals(Position.of(0, 6))) {
+				return rights.whiteCanCastleKingside();
+			}
+			if (to.equals(Position.of(0, 2))) {
+				return rights.whiteCanCastleQueenside();
+			}
+		} else {
+			if (to.equals(Position.of(7, 6))) {
+				return rights.blackCanCastleKingside();
+			}
+			if (to.equals(Position.of(7, 2))) {
+				return rights.blackCanCastleQueenside();
+			}
 		}
-		board.setPieceAt(from, null);
+		return false;
 	}
 
+	private boolean isPathClear(Board board, Color color, Position from, Position to) {
+		int row = color == Color.WHITE ? 0 : 7;
+		int startCol = 4;
+		int endCol = to.getCol();
+		int step = (endCol - startCol) / Math.abs(endCol - startCol);
+
+		for (int col = startCol + step; col != endCol; col += step) {
+			if (board.getPieceAt(Position.of(row, col)) != null) {
+				return false;
+			}
+		}
+		return true;
+	}
+    
+    private boolean isKingNotInCheck(Board board, Color color, Position from) {
+        return !board.isSquareAttacked(from, color);
+    }
+
+	private boolean areCastlingSquaresSafe(Board board, Color color, Position from, Position to) {
+		int row = from.getRow();
+		int step = (to.getCol() - from.getCol()) / 2;
+
+		Position intermediate = Position.of(row, from.getCol() + step);
+		Position destination = to;
+
+		return !board.isSquareAttacked(intermediate, color)
+				&& !board.isSquareAttacked(destination, color);
+	}
+    
 	public void updateCastlingRightsOnMove(Board board, Piece piece, Position from) {
 		CastlingRights rights = board.getCastlingRights();
 

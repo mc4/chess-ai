@@ -9,6 +9,7 @@ import java.util.function.BiFunction;
 import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
+import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
 import dev.markconley.chess.engine.pieces.Bishop;
 import dev.markconley.chess.engine.pieces.Direction;
 import dev.markconley.chess.engine.pieces.King;
@@ -157,6 +158,7 @@ public class MoveGenerator {
 	public static List<Move> generateKingMoves(Board board, Piece king) {
 		List<Move> moves = new ArrayList<>();
 		
+		// Normal moves
 		for (Direction direction : Direction.KING_DIRECTIONS) {
 			int row = king.getPosition().getRow() + direction.rowOffset();
 			int col = king.getPosition().getCol() + direction.colOffset();
@@ -173,8 +175,27 @@ public class MoveGenerator {
 			}
 		}
 		
-		 // TODO: Handle castling
-		
+		// Castling moves
+	    CastlingMoveHandler castlingHandler = new CastlingMoveHandler();
+	    Position from = king.getPosition();
+//	    Color color = king.getColor();
+
+	    // Kingside and queenside castling destinations
+	    int row = from.getRow();
+	    List<Position> castleDestinations = List.of(
+	        Position.of(row, 6),
+	        Position.of(row, 2) 
+	    );
+
+	    for (Position to : castleDestinations) {
+	        if (castlingHandler.canHandle(king, from, to)) {
+	            Move castleMove = castlingHandler.handle(board, king, from, to);
+	            if (castleMove != null) {
+	                moves.add(castleMove);
+	            }
+	        }
+	    }
+	    
 		return moves;
 	}
 	

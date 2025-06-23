@@ -37,7 +37,7 @@ public class Board implements Copyable<Board> {
 	private List<Move> moveHistory;
 	private LastMove lastMove;
 	
-	private CastlingRights castlingRights;
+	private static CastlingRights castlingRights;
     private final CastlingMoveHandler castlingMoveHandler = new CastlingMoveHandler();
     
 	public Board() {
@@ -45,14 +45,14 @@ public class Board implements Copyable<Board> {
 		setupInitialPosition();
 		this.currentTurn = Color.WHITE;
 		this.moveHistory = new ArrayList<>();
-		this.castlingRights = new CastlingRights();
+		Board.castlingRights = new CastlingRights();
 	}
 	
 	private Board(boolean skipSetup) {
 		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
 		this.currentTurn = Color.WHITE;
 		this.moveHistory = new ArrayList<>();
-		this.castlingRights = new CastlingRights();
+		Board.castlingRights = new CastlingRights();
 		
 		if (!skipSetup) {
 			setupInitialPosition();
@@ -61,6 +61,15 @@ public class Board implements Copyable<Board> {
 	
 	public static Board emptyBoard() {
 	    return new Board(true); 
+	}
+	
+	public void clearBoard() {
+		for (int rank = 0; rank < 8; rank++) {
+			for (int file = 0; file < 8; file++) {
+				Position position = Position.of(rank, file);
+				setPieceAt(position, null);
+			}
+		}
 	}
 	
 	public Board place(String square, Piece piece) {
@@ -223,7 +232,7 @@ public class Board implements Copyable<Board> {
 	    Piece movedPiece = move.movedPiece();
 	    Position from = move.from();
 	    Position to = move.to();
-
+	    
 	    setPieceAt(from, null);
 	    setPieceAt(to, movedPiece);
 	    movedPiece.setPosition(to);
@@ -234,17 +243,7 @@ public class Board implements Copyable<Board> {
 	    }
 
 	    if (move.isCastling()) {
-	        if (to.getCol() == 6) {
-	            Piece rook = getPieceAt(new Position(from.getRow(), 7));
-	            setPieceAt(new Position(from.getRow(), 5), rook);
-	            setPieceAt(new Position(from.getRow(), 7), null);
-	            rook.setPosition(new Position(from.getRow(), 5));
-	        } else if (to.getCol() == 2) {
-	            Piece rook = getPieceAt(new Position(from.getRow(), 0));
-	            setPieceAt(new Position(from.getRow(), 3), rook);
-	            setPieceAt(new Position(from.getRow(), 0), null);
-	            rook.setPosition(new Position(from.getRow(), 3));
-	        }
+	    	handleCastling(from, to);
 	    }
 
 	    if (move.isPromotion()) {
@@ -253,6 +252,26 @@ public class Board implements Copyable<Board> {
 	        setPieceAt(to, promoted);
 	    }
 
+	}
+	
+	private void handleCastling(Position from, Position to) {
+	    int row = from.getRow();
+	    int toCol = to.getCol();
+
+	    if (toCol == 6) { // Kingside castling
+	        moveRookForCastling(row, 7, 5);
+	    } else if (toCol == 2) { // Queenside castling
+	        moveRookForCastling(row, 0, 3);
+	    }
+	}
+
+	private void moveRookForCastling(int row, int fromCol, int toCol) {
+	    Position rookFrom = new Position(row, fromCol);
+	    Position rookTo = new Position(row, toCol);
+	    Piece rook = getPieceAt(rookFrom);
+	    setPieceAt(rookTo, rook);
+	    setPieceAt(rookFrom, null);
+	    rook.setPosition(rookTo);
 	}
 
 	public boolean canCastle(Position from, Position to, Color color) {
@@ -316,7 +335,7 @@ public class Board implements Copyable<Board> {
 	    Position from = move.from();
 	    Position to = move.to();
 	    Piece movingPiece = getPieceAt(from);
-
+	    
 	    // Rule 1: Must be a piece of current turn
 	    if (movingPiece == null || movingPiece.getColor() != currentTurn) {
 	        return false;
@@ -411,5 +430,4 @@ public class Board implements Copyable<Board> {
 		return getBoardString();
 	}
 
-	
 }
