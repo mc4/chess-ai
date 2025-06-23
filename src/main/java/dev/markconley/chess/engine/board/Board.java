@@ -375,6 +375,31 @@ public class Board implements Copyable<Board> {
 	    return List.copyOf(moveHistory); 
 	}
 
+	public Position getEnPassantTarget() {
+		if (lastMove == null) {
+			return null;
+		}
+
+		Piece movedPiece = lastMove.piece();
+		Position from = lastMove.from();
+		Position to = lastMove.to();
+
+		if (!(movedPiece instanceof Pawn)) {
+			return null;
+		}
+
+		int rowDiff = Math.abs(from.getRow() - to.getRow());
+		if (rowDiff != 2) {
+			return null;
+		}
+
+		// Return the square "behind" the pawn that moved two steps forward
+		int enPassantRow = (from.getRow() + to.getRow()) / 2;
+		int col = to.getCol();
+
+		return Position.of(enPassantRow, col);
+	}
+
 	@Override
 	public Board copy() {
 		Board newBoard = Board.emptyBoard();
