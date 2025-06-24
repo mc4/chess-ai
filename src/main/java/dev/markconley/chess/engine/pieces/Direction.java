@@ -12,14 +12,14 @@ public enum Direction {
     DOWN_RIGHT(1, 1),
     
     // 8 possible moves for the knight (L-shaped moves)
-    UP_2_RIGHT_1(2, 1),
-    UP_2_LEFT_1(2, -1),
-    DOWN_2_RIGHT_1(-2, 1),
-    DOWN_2_LEFT_1(-2, -1),
-    RIGHT_2_UP_1(1, 2),
-    RIGHT_2_DOWN_1(1, -2),
-    LEFT_2_UP_1(-1, 2),
-    LEFT_2_DOWN_1(-1, -2);
+    UP_2_RIGHT_1(-2, 1),
+    UP_2_LEFT_1(-2, -1),
+    DOWN_2_RIGHT_1(2, 1),
+    DOWN_2_LEFT_1(2, -1),
+    RIGHT_2_UP_1(-1, 2),
+    RIGHT_2_DOWN_1(1, 2),
+    LEFT_2_UP_1(-1, -2),
+    LEFT_2_DOWN_1(1, -2);
 
     private final int rowOffset;
     private final int colOffset;
