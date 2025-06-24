@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -16,7 +19,10 @@ import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveFactory;
+import dev.markconley.chess.engine.move.MoveGenerator;
+import dev.markconley.chess.engine.pieces.Bishop;
 import dev.markconley.chess.engine.pieces.King;
+import dev.markconley.chess.engine.pieces.Knight;
 import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.Queen;
@@ -294,14 +300,49 @@ class BoardTest {
 		assertFalse(board.makeMove(e5, d6), "Should not allow en passant when not set up");
 	}
 	
-
-	@Disabled("Not implemented yet")
 	@Test
 	void testPawnPromotion() {
+	    Board board = Board.emptyBoard(); // no initial position setup
+
+	    Piece whitePawn = new Pawn(Color.WHITE);
+	    Position from = Position.of("e7");
+	    whitePawn.setPosition(from);
+	    board.setPieceAt(from, whitePawn);
+
+	    List<Move> moves = MoveGenerator.generatePawnMoves(board, whitePawn);
+
+	    List<Move> promotionMoves = moves.stream()
+	            .filter(Move::isPromotion)
+	            .toList();
+
+	    assertEquals(4, promotionMoves.size());
+
+	    Set<Class<?>> promotionClasses = promotionMoves.stream()
+	            .map(Move::promotionPiece)
+	            .filter(Objects::nonNull)
+	            .map(p -> (Class<?>) p.getClass())
+	            .collect(Collectors.toSet());
+
+	    assertTrue(promotionClasses.containsAll(List.of(
+	        Queen.class, Rook.class, Bishop.class, Knight.class
+	    )));
 	}
 	
 	@Test
 	void testPawnPromotionToQueen() {
+	    Board board = new Board();
+	    Piece whitePawn = new Pawn(Color.WHITE);
+	    Position from = Position.of("e7");
+	    whitePawn.setPosition(from);
+	    board.setPieceAt(from, whitePawn);
+
+	    List<Move> moves = MoveGenerator.generatePawnMoves(board, whitePawn);
+
+	    boolean hasQueenPromotion = moves.stream()
+	            .filter(Move::isPromotion)
+	            .anyMatch(move -> move.promotionPiece() instanceof Queen);
+
+	    assertTrue(hasQueenPromotion);
 	}	
 
 	// Move History

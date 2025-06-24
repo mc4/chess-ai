@@ -94,17 +94,19 @@ public class MoveGenerator {
 	    int startRow = color == Color.WHITE ? 1 : 6;
 	    Color enemyColor = color.opposite();
 
-	    // Forward one step
-	    Position oneStep = Position.of(row + direction, col);
-	    if (Position.isValid(oneStep) && board.getPieceAt(oneStep) == null) {
-	        addMoveOrPromotion(moves, from, oneStep, piece, null);
+		// Forward one step
+		Position oneStep = Position.of(row + direction, col);
+		if (Position.isValid(oneStep) && board.getPieceAt(oneStep) == null) {
+			addMoveOrPromotion(moves, from, oneStep, piece, null);
 
-	        // Forward two steps from starting row
-	        Position twoStep = Position.of(row + 2 * direction, col);
-	        if (row == startRow && board.getPieceAt(twoStep) == null) {
-	            moves.add(MoveFactory.normal(from, twoStep, piece));
-	        }
-	    }
+			// Forward two steps from starting row
+			if (row == startRow) {
+				Position twoStep = Position.of(row + 2 * direction, col);
+				if (board.getPieceAt(twoStep) == null) {
+					moves.add(MoveFactory.normal(from, twoStep, piece));
+				}
+			}
+		}
 
 	    // Diagonal captures (including promotion)
 	    Position[] captures = {
