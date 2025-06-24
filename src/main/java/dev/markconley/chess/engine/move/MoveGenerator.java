@@ -137,7 +137,15 @@ public class MoveGenerator {
 	    int promotionRow = (pawn.getColor() == Color.WHITE) ? 7 : 0;
 
 	    if (to.getRow() == promotionRow) {
-	        moves.add(MoveFactory.promotion(from, to, pawn, new Queen(pawn.getColor())));
+	    	List<Piece> promotionOptions = List.of(
+		            new Queen(pawn.getColor()),
+		            new Rook(pawn.getColor()),
+		            new Bishop(pawn.getColor()),
+		            new Knight(pawn.getColor()));
+
+			for (Piece promoted : promotionOptions) {
+				moves.add(MoveFactory.promotion(from, to, pawn, promoted));
+			}
 	    } else if (captured == null) {
 	        moves.add(MoveFactory.normal(from, to, pawn));
 	    } else {
@@ -145,7 +153,6 @@ public class MoveGenerator {
 	    }
 	}
 
-	
 	public static List<Move> generateKingMoves(Board board, Piece king) {
 		List<Move> moves = new ArrayList<>();
 		
