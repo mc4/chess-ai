@@ -302,7 +302,7 @@ class BoardTest {
 	
 	@Test
 	void testPawnPromotion() {
-	    Board board = Board.emptyBoard(); // no initial position setup
+	    Board board = Board.emptyBoard(); 
 
 	    Piece whitePawn = new Pawn(Color.WHITE);
 	    Position from = Position.of("e7");
