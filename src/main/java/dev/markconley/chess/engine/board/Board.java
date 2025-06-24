@@ -3,6 +3,7 @@ package dev.markconley.chess.engine.board;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import dev.markconley.chess.engine.core.Color;
@@ -403,6 +404,16 @@ public class Board implements Copyable<Board> {
 
 		return Position.of(enPassantRow, col);
 	}
+	
+    public static Position findKingPosition(Board board, Color color) {
+    	return board.getActivePieces(color)
+        		.stream()
+        		.filter(Objects::nonNull)
+                .filter(p -> p.getPieceType() == PieceType.KING)
+                .map(Piece::getPosition)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("King not found on board"));
+    }
 
 	@Override
 	public Board copy() {
