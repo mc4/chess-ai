@@ -185,7 +185,7 @@ public class MoveGeneratorTest {
 	        	    .map(p -> (Class<?>) p.getClass()) 
 	        	    .collect(Collectors.toSet());   
 
-	        assertTrue(promotedTypes.containsAll(List.of(
+	        assertTrue(promotedTypes.containsAll(Set.of(
 	            Queen.class, Rook.class, Bishop.class, Knight.class
 	        )));
 	    }
