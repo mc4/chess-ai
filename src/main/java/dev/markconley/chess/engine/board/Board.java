@@ -38,7 +38,7 @@ public class Board implements Copyable<Board> {
 	private List<Move> moveHistory;
 	private LastMove lastMove;
 	
-	private static CastlingRights castlingRights;
+	private CastlingRights castlingRights;
     private final CastlingMoveHandler castlingMoveHandler = new CastlingMoveHandler();
     
 	public Board() {
@@ -46,14 +46,14 @@ public class Board implements Copyable<Board> {
 		setupInitialPosition();
 		this.currentTurn = Color.WHITE;
 		this.moveHistory = new ArrayList<>();
-		Board.castlingRights = new CastlingRights();
+		this.castlingRights = new CastlingRights();
 	}
 	
 	private Board(boolean skipSetup) {
 		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
 		this.currentTurn = Color.WHITE;
 		this.moveHistory = new ArrayList<>();
-		Board.castlingRights = new CastlingRights();
+		this.castlingRights = new CastlingRights();
 		
 		if (!skipSetup) {
 			setupInitialPosition();
