@@ -6,8 +6,25 @@ import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.AttackMapGenerator;
 
 public class GameStateEvaluator {
-	
-    private GameStateEvaluator() { } // Utility class
+
+	private GameStateEvaluator() { } // Utility class
+
+	public static GameStatus evaluate(Board board, Color color) {
+		boolean inCheck = isInCheck(board, color);
+		boolean hasMoves = hasLegalMoves(board, color);
+
+		if (inCheck && !hasMoves) {
+			return GameStatus.CHECKMATE;
+		}
+		if (!inCheck && !hasMoves) {
+			return GameStatus.STALEMATE;
+		}
+		if (inCheck) {
+			return GameStatus.CHECK;
+		}
+
+		return GameStatus.ONGOING;
+	}
 
 	public static boolean isInCheck(Board board, Color color) {
 		Position kingPos = Board.findKingPosition(board, color);
@@ -15,16 +32,15 @@ public class GameStateEvaluator {
 		return AttackMapGenerator.generateAttackSquares(board, opponentColor).contains(kingPos);
 	}
 
-    public static boolean hasLegalMoves(Board board, Color color) {
-        return board.getActivePieces(color)
-        		.stream()
-                .flatMap(piece -> piece.getPossibleMoves(board, board.getSpecialMoveService()).stream())
-                .anyMatch(move -> {
-                    Board simulated = board.copy();
-                    simulated.makeMove(move.from(), move.to());
-                    return !isInCheck(simulated, color);
-                });
-    }
+	public static boolean hasLegalMoves(Board board, Color color) {
+		return board.getActivePieces(color).stream()
+				.flatMap(piece -> piece.getPossibleMoves(board, board.getSpecialMoveService()).stream())
+				.anyMatch(move -> {
+					Board simulated = board.copy();
+					simulated.makeMove(move.from(), move.to());
+					return !isInCheck(simulated, color);
+				});
+	}
 
 	public static boolean isCheckmate(Board board, Color color) {
 		return isInCheck(board, color) && !hasLegalMoves(board, color);
