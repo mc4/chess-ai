@@ -85,17 +85,17 @@ public class Board implements Copyable<Board> {
 	    setPieceAt(pos, piece);
 	    return this;
 	}
+	
+	private void setupPawns(int row, Color color) {
+	    for (int col = 0; col < 8; col++) {
+	        board[row][col] = new Pawn(color);
+	    }
+	}
 
 	private void setupInitialPosition() {
 		board = new Piece[8][8];
-		board[1][0] = new Pawn(Color.WHITE);
-		board[1][1] = new Pawn(Color.WHITE);
-		board[1][2] = new Pawn(Color.WHITE);
-		board[1][3] = new Pawn(Color.WHITE);
-		board[1][4] = new Pawn(Color.WHITE);
-		board[1][5] = new Pawn(Color.WHITE);
-		board[1][6] = new Pawn(Color.WHITE);
-		board[1][7] = new Pawn(Color.WHITE);
+		setupPawns(1, Color.WHITE);
+		setupPawns(6, Color.BLACK);
 
 		board[0][0] = new Rook(Color.WHITE);
 		board[0][1] = new Knight(Color.WHITE);
@@ -105,15 +105,6 @@ public class Board implements Copyable<Board> {
 		board[0][5] = new Bishop(Color.WHITE);
 		board[0][6] = new Knight(Color.WHITE);
 		board[0][7] = new Rook(Color.WHITE);
-
-		board[6][0] = new Pawn(Color.BLACK);
-		board[6][1] = new Pawn(Color.BLACK);
-		board[6][2] = new Pawn(Color.BLACK);
-		board[6][3] = new Pawn(Color.BLACK);
-		board[6][4] = new Pawn(Color.BLACK);
-		board[6][5] = new Pawn(Color.BLACK);
-		board[6][6] = new Pawn(Color.BLACK);
-		board[6][7] = new Pawn(Color.BLACK);
 
 		board[7][0] = new Rook(Color.BLACK);
 		board[7][1] = new Knight(Color.BLACK);
