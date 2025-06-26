@@ -9,7 +9,7 @@ import java.util.function.BiFunction;
 import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
-import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
+import dev.markconley.chess.engine.move.service.SpecialMoveService;
 import dev.markconley.chess.engine.pieces.Bishop;
 import dev.markconley.chess.engine.pieces.Direction;
 import dev.markconley.chess.engine.pieces.King;
@@ -153,7 +153,7 @@ public class MoveGenerator {
 	    }
 	}
 
-	public static List<Move> generateKingMoves(Board board, Piece king) {
+	public static List<Move> generateKingMoves(Board board, Piece king, SpecialMoveService specialMoveService) {
 		List<Move> moves = new ArrayList<>();
 		
 		// Normal moves
@@ -174,7 +174,6 @@ public class MoveGenerator {
 		}
 		
 		// Castling moves
-	    CastlingMoveHandler castlingHandler = new CastlingMoveHandler();
 	    Position from = king.getPosition();
 
 	    // Kingside and queenside castling destinations
@@ -185,8 +184,8 @@ public class MoveGenerator {
 	    );
 
 	    for (Position to : castleDestinations) {
-	        if (castlingHandler.canHandle(king, from, to)) {
-	            Move castleMove = castlingHandler.handle(board, king, from, to);
+	        if (specialMoveService.getCastlingMoveHandler().canHandle(king, from, to)) {
+	            Move castleMove = specialMoveService.getCastlingMoveHandler().handle(board, king, from, to);
 	            if (castleMove != null) {
 	                moves.add(castleMove);
 	            }
@@ -206,11 +205,14 @@ public class MoveGenerator {
 		        return moves;
 		    },
 		    Knight.class,  (board, piece) -> generateJumpingMoves(board, piece),
-		    Pawn.class,    MoveGenerator::generatePawnMoves,
-		    King.class,    MoveGenerator::generateKingMoves
+		    Pawn.class,    MoveGenerator::generatePawnMoves
 		);
 
-	public static List<Move> generateMoves(Board board, Piece piece) {
+	public static List<Move> generateMoves(Board board, Piece piece, SpecialMoveService specialMoveService) {
+	    if (piece instanceof King) {
+	        return generateKingMoves(board, piece, specialMoveService);
+	    }
+
 	    return MOVE_GENERATORS
 	        .getOrDefault(piece.getClass(), (b, p) -> List.of())
 	        .apply(board, piece);

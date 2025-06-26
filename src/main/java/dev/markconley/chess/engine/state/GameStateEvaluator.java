@@ -4,7 +4,6 @@ import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.AttackMapGenerator;
-import dev.markconley.chess.engine.move.MoveGenerator;
 
 public class GameStateEvaluator {
 	
@@ -19,7 +18,7 @@ public class GameStateEvaluator {
     public static boolean hasLegalMoves(Board board, Color color) {
         return board.getActivePieces(color)
         		.stream()
-                .flatMap(piece -> MoveGenerator.generateMoves(board, piece).stream())
+                .flatMap(piece -> piece.getPossibleMoves(board, board.getSpecialMoveService()).stream())
                 .anyMatch(move -> {
                     Board simulated = board.copy();
                     simulated.makeMove(move.from(), move.to());

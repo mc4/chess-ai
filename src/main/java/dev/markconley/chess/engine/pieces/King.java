@@ -6,6 +6,7 @@ import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveGenerator;
+import dev.markconley.chess.engine.move.service.SpecialMoveService;
 
 public class King extends Piece {
 
@@ -14,8 +15,8 @@ public class King extends Piece {
 	}
 
 	@Override
-	public List<Move> getPossibleMoves(Board board) {
-		return MoveGenerator.generateKingMoves(board, this);
+	public List<Move> getPossibleMoves(Board board, SpecialMoveService specialMoveService) {
+		return MoveGenerator.generateKingMoves(board, this, specialMoveService);
 	}
 
 	@Override

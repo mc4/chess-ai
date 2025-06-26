@@ -9,7 +9,15 @@ import dev.markconley.chess.engine.move.MoveFactory;
 import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 
-public class EnPassantMoveHandler implements SpecialMoveHandler {
+public class EnPassantMoveHandler implements SimpleMoveHandler {
+	
+	private static final EnPassantMoveHandler INSTANCE = new EnPassantMoveHandler();
+
+	private EnPassantMoveHandler() { }
+
+	public static EnPassantMoveHandler getInstance() {
+		return INSTANCE;
+	}
 
 	@Override
 	public boolean canHandle(Piece piece, Position from, Position to) {

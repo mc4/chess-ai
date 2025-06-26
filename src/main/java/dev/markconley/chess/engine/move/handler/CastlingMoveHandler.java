@@ -10,7 +10,15 @@ import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.Rook;
 import dev.markconley.chess.engine.state.CastlingRights;
 
-public class CastlingMoveHandler implements SpecialMoveHandler {
+public class CastlingMoveHandler implements SimpleMoveHandler {
+	
+	private static final CastlingMoveHandler INSTANCE = new CastlingMoveHandler();
+
+	private CastlingMoveHandler() { }
+
+	public static CastlingMoveHandler getInstance() {
+		return INSTANCE;
+	}
 
 	@Override
 	public boolean canHandle(Piece piece, Position from, Position to) {
@@ -23,19 +31,17 @@ public class CastlingMoveHandler implements SpecialMoveHandler {
         	return null;
         }
 
-//        disableCastlingRightsAfterCastling(board, piece.getColor());
-//        moveRookDuringCastling(board, from, to);
         return MoveFactory.castle(from, to, piece);
     }
 
     private boolean isValidCastle(Board board, Color color, Position from, Position to) {
         
-    boolean hasCastlingRights =  hasCastlingRights(board, color, to);
-    boolean isPathClear = isPathClear(board, color, from, to);
-    boolean isKingNotInCheck = isKingNotInCheck(board, color, from);
-    boolean areCastlingSquaresSafe = areCastlingSquaresSafe(board, color, from, to);
-    
-    return hasCastlingRights && isPathClear && isKingNotInCheck && areCastlingSquaresSafe; 
+	    boolean hasCastlingRights =  hasCastlingRights(board, color, to);
+	    boolean isPathClear = isPathClear(board, color, from, to);
+	    boolean isKingNotInCheck = isKingNotInCheck(board, color, from);
+	    boolean areCastlingSquaresSafe = areCastlingSquaresSafe(board, color, from, to);
+	    
+	    return hasCastlingRights && isPathClear && isKingNotInCheck && areCastlingSquaresSafe; 
     }
 
 	private boolean hasCastlingRights(Board board, Color color, Position to) {

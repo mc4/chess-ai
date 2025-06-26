@@ -197,7 +197,7 @@ public class MoveGeneratorTest {
 	        king.setPosition(pos);
 	        board.setPieceAt(pos, king);
 
-	        List<Move> moves = MoveGenerator.generateKingMoves(board, king);
+	        List<Move> moves = MoveGenerator.generateKingMoves(board, king, board.getSpecialMoveService());
 
 	        // King can move one square in any direction (max 8 moves)
 	        assertTrue(moves.size() > 0);
@@ -215,7 +215,7 @@ public class MoveGeneratorTest {
 	        queen.setPosition(pos);
 	        board.setPieceAt(pos, queen);
 
-	        List<Move> moves = MoveGenerator.generateMoves(board, queen);
+	        List<Move> moves = MoveGenerator.generateMoves(board, queen, board.getSpecialMoveService());
 
 	        // Queen moves = rook moves + bishop moves => should be more than zero
 	        assertTrue(moves.size() > 0);

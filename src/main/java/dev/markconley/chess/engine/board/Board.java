@@ -13,12 +13,9 @@ import dev.markconley.chess.engine.move.AttackMapGenerator;
 import dev.markconley.chess.engine.move.LastMove;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveFactory;
-import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
-import dev.markconley.chess.engine.move.handler.EnPassantMoveHandler;
-import dev.markconley.chess.engine.move.handler.PromotionMoveHandler;
-import dev.markconley.chess.engine.move.handler.SpecialMoveHandler;
 import dev.markconley.chess.engine.move.promotion.PromotionStrategy;
 import dev.markconley.chess.engine.move.promotion.QueenPromotionStrategy;
+import dev.markconley.chess.engine.move.service.SpecialMoveService;
 import dev.markconley.chess.engine.pieces.Bishop;
 import dev.markconley.chess.engine.pieces.King;
 import dev.markconley.chess.engine.pieces.Knight;
@@ -39,8 +36,8 @@ public class Board implements Copyable<Board> {
 	private LastMove lastMove;
 	
 	private CastlingRights castlingRights;
-    private final CastlingMoveHandler castlingMoveHandler = new CastlingMoveHandler();
-    
+	private final SpecialMoveService specialMoveService = new SpecialMoveService();
+	
 	public Board() {
 		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
 		setupInitialPosition();
@@ -181,19 +178,9 @@ public class Board implements Copyable<Board> {
 	        return null;
 	    }
 
-	    List<SpecialMoveHandler> specialHandlers = List.of(
-	        new CastlingMoveHandler(),
-	        new EnPassantMoveHandler(),
-	        new PromotionMoveHandler(promotionStrategy)
-	    );
-
-	    for (SpecialMoveHandler handler : specialHandlers) {
-	        if (handler.canHandle(piece, from, to)) {
-	            Move move = handler.handle(this, piece, from, to);
-	            if (move != null) {
-	            	return move;
-	            }
-	        }
+	    Move specialMove = specialMoveService.trySpecialMove(this, piece, from, to, promotionStrategy);
+	    if (specialMove != null) {
+	        return specialMove;
 	    }
 
 	    return createStandardMove(from, to, piece);
@@ -209,15 +196,14 @@ public class Board implements Copyable<Board> {
 		}
 		
 	    Piece targetPiece = getPieceAt(to);
-
+	    
 	    if (targetPiece == null) {
-	        castlingMoveHandler.updateCastlingRightsOnMove(this, movedPiece, from);
+	        specialMoveService.updateCastlingRightsOnStandardMove(this, movedPiece, null, from, to);
 	        return MoveFactory.normal(from, to, movedPiece);
 	    }
 
 	    if (targetPiece.getColor() != movedPiece.getColor()) {
-	        castlingMoveHandler.updateCastlingRightsOnMove(this, movedPiece, from);
-	        castlingMoveHandler.updateCastlingRightsOnRookCapture(this, targetPiece, to);
+	        specialMoveService.updateCastlingRightsOnStandardMove(this, movedPiece, targetPiece, from, to);
 	        return MoveFactory.capture(from, to, movedPiece, targetPiece);
 	    }
 
@@ -394,6 +380,10 @@ public class Board implements Copyable<Board> {
 		int col = to.getCol();
 
 		return Position.of(enPassantRow, col);
+	}
+	
+	public SpecialMoveService getSpecialMoveService() {
+	    return specialMoveService;
 	}
 	
     public static Position findKingPosition(Board board, Color color) {

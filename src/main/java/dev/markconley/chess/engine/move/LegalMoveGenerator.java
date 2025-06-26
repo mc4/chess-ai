@@ -14,7 +14,7 @@ public class LegalMoveGenerator {
 	public static List<Move> generateLegalMoves(Board board, Color color) {
 	    return board.getActivePieces(color)
 	                .stream()
-	                .flatMap(p -> MoveGenerator.generateMoves(board, p).stream())
+	                .flatMap(p -> p.getPossibleMoves(board, board.getSpecialMoveService()).stream())
 	                .filter(move -> isLegalMove(board, move, color))
 	                .toList();
 	}

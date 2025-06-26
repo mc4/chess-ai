@@ -9,13 +9,15 @@ import dev.markconley.chess.engine.move.promotion.PromotionStrategy;
 import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 
-public class PromotionMoveHandler implements SpecialMoveHandler {
+public class PromotionMoveHandler implements PromotionHandler {
 	
-    private final PromotionStrategy strategy;
+	private static final PromotionMoveHandler INSTANCE = new PromotionMoveHandler();
 
-    public PromotionMoveHandler(PromotionStrategy strategy) {
-        this.strategy = strategy;
-    }
+	private PromotionMoveHandler() { }
+
+	public static PromotionMoveHandler getInstance() {
+		return INSTANCE;
+	}
 
 	@Override
 	public boolean canHandle(Piece piece, Position from, Position to) {
@@ -29,15 +31,13 @@ public class PromotionMoveHandler implements SpecialMoveHandler {
 		return (color == Color.WHITE && targetRow == 7) || (color == Color.BLACK && targetRow == 0);
 	}
 
-	@Override
-	public Move handle(Board board, Piece piece, Position from, Position to) {
-		Piece promoted = strategy.choosePromotion(piece.getColor());
-		promoted.setPosition(to);
-
-		board.setPieceAt(to, promoted);
-		board.setPieceAt(from, null);
-
-		return MoveFactory.promotion(from, to, piece, promoted);
-	}
+    @Override
+    public Move handle(Board board, Piece piece, Position from, Position to, PromotionStrategy strategy) {
+        Piece promoted = strategy.choosePromotion(piece.getColor());
+        promoted.setPosition(to);
+        board.setPieceAt(to, promoted);
+        board.setPieceAt(from, null);
+        return MoveFactory.promotion(from, to, piece, promoted);
+    }
 
 }
