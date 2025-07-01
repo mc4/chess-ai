@@ -2,10 +2,10 @@ package dev.markconley.chess.engine.pieces;
 
 import java.util.List;
 
-import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveGenerator;
+import dev.markconley.chess.engine.state.BoardState;
 
 public class Knight extends Piece {
 
@@ -14,8 +14,8 @@ public class Knight extends Piece {
 	}
 
 	@Override
-	public List<Move> getPossibleMoves(Board board) {
-		return MoveGenerator.generateJumpingMoves(board, this);
+	public List<Move> getPossibleMoves(BoardState state) {
+		return MoveGenerator.generateJumpingMoves(state.getBoard(), this);
 	}
 
 	@Override

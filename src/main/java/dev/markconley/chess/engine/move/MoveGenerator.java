@@ -18,11 +18,10 @@ import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.Queen;
 import dev.markconley.chess.engine.pieces.Rook;
+import dev.markconley.chess.engine.state.BoardState;
 
 public class MoveGenerator {
 	
-//	private final EnPassantStrategy enPassantStrategy = new DefaultEnPassantStrategy();
-
 	public static List<Move> generateSlidingMoves(Board board, Piece piece, Direction[] directions) {
 	    return Arrays.stream(directions)
 	            .flatMap(direction -> slideInDirection(board, piece, direction).stream())
@@ -80,7 +79,8 @@ public class MoveGenerator {
 		return moves;
 	}
 	
-	public static List<Move> generatePawnMoves(Board board, Piece piece) {
+	public static List<Move> generatePawnMoves(BoardState state, Piece piece) {
+	    Board board = state.getBoard();
 	    List<Move> moves = new ArrayList<>();
 
 	    Position from = piece.getPosition();
@@ -92,21 +92,20 @@ public class MoveGenerator {
 	    int startRow = color == Color.WHITE ? 1 : 6;
 	    Color enemyColor = color.opposite();
 
-		// Forward one step
-		Position oneStep = Position.of(row + direction, col);
-		if (Position.isValid(oneStep) && board.getPieceAt(oneStep) == null) {
-			addMoveOrPromotion(moves, from, oneStep, piece, null);
+	    // Forward one step
+	    Position oneStep = Position.of(row + direction, col);
+	    if (Position.isValid(oneStep) && board.getPieceAt(oneStep) == null) {
+	        addMoveOrPromotion(moves, from, oneStep, piece, null);
 
-			// Forward two steps from starting row
-			if (row == startRow) {
-				Position twoStep = Position.of(row + 2 * direction, col);
-				if (board.getPieceAt(twoStep) == null) {
-					moves.add(MoveFactory.normal(from, twoStep, piece));
-				}
-			}
-		}
+	        if (row == startRow) {
+	            Position twoStep = Position.of(row + 2 * direction, col);
+	            if (board.getPieceAt(twoStep) == null) {
+	                moves.add(MoveFactory.normal(from, twoStep, piece));
+	            }
+	        }
+	    }
 
-	    // Diagonal captures (including promotion)
+	    // Diagonal captures
 	    Position[] captures = {
 	        Position.of(row + direction, col - 1),
 	        Position.of(row + direction, col + 1)
@@ -122,8 +121,11 @@ public class MoveGenerator {
 	    }
 
 	    // En passant
-	    Position enPassantTarget = board.getEnPassantTarget();
-	    if (enPassantTarget != null && Math.abs(enPassantTarget.getCol() - col) == 1 && enPassantTarget.getRow() == row + direction) {
+	    Position enPassantTarget = state.getEnPassantTarget();
+	    if (enPassantTarget != null &&
+	        Math.abs(enPassantTarget.getCol() - col) == 1 &&
+	        enPassantTarget.getRow() == row + direction) {
+
 	        Piece capturedPawn = board.getPieceAt(Position.of(row, enPassantTarget.getCol()));
 	        if (capturedPawn != null && capturedPawn.getColor() == enemyColor && capturedPawn instanceof Pawn) {
 	            moves.add(MoveFactory.enPassant(from, enPassantTarget, piece, capturedPawn));
@@ -132,6 +134,7 @@ public class MoveGenerator {
 
 	    return moves;
 	}
+
 
 	private static void addMoveOrPromotion(List<Move> moves, Position from, Position to, Piece pawn, Piece captured) {
 	    int promotionRow = (pawn.getColor() == Color.WHITE) ? 7 : 0;
@@ -153,8 +156,9 @@ public class MoveGenerator {
 	    }
 	}
 
-	public static List<Move> generateKingMoves(Board board, Piece king, SpecialMoveService specialMoveService) {
+	public static List<Move> generateKingMoves(BoardState state, Piece king, SpecialMoveService specialMoveService) {
 		List<Move> moves = new ArrayList<>();
+		Board board = state.getBoard();
 		
 		// Normal moves
 		for (Direction direction : Direction.KING_DIRECTIONS) {
@@ -185,7 +189,7 @@ public class MoveGenerator {
 
 	    for (Position to : castleDestinations) {
 	        if (specialMoveService.getCastlingMoveHandler().canHandle(king, from, to)) {
-	            Move castleMove = specialMoveService.getCastlingMoveHandler().handle(board, king, from, to);
+	            Move castleMove = specialMoveService.getCastlingMoveHandler().handle(state, king, from, to);
 	            if (castleMove != null) {
 	                moves.add(castleMove);
 	            }
@@ -196,26 +200,26 @@ public class MoveGenerator {
 	}
 	
 	// @formatter:off
-	private static final Map<Class<?>, BiFunction<Board, Piece, List<Move>>> MOVE_GENERATORS = Map.of(
-		    Rook.class,    (board, piece) -> generateSlidingMoves(board, piece, Direction.ROOK_DIRECTIONS),
-		    Bishop.class,  (board, piece) -> generateSlidingMoves(board, piece, Direction.BISHOP_DIRECTIONS),
-		    Queen.class,   (board, piece) -> {
-		        List<Move> moves = new ArrayList<>(generateSlidingMoves(board, piece, Direction.ROOK_DIRECTIONS));
-		        moves.addAll(generateSlidingMoves(board, piece, Direction.BISHOP_DIRECTIONS));
+	private static final Map<Class<?>, BiFunction<BoardState, Piece, List<Move>>> MOVE_GENERATORS = Map.of(
+		    Rook.class,   (state, piece) -> generateSlidingMoves(state.getBoard(), piece, Direction.ROOK_DIRECTIONS),
+		    Bishop.class, (state, piece) -> generateSlidingMoves(state.getBoard(), piece, Direction.BISHOP_DIRECTIONS),
+		    Queen.class,  (state, piece) -> {
+		        List<Move> moves = new ArrayList<>(generateSlidingMoves(state.getBoard(), piece, Direction.ROOK_DIRECTIONS));
+		        moves.addAll(generateSlidingMoves(state.getBoard(), piece, Direction.BISHOP_DIRECTIONS));
 		        return moves;
 		    },
-		    Knight.class,  (board, piece) -> generateJumpingMoves(board, piece),
-		    Pawn.class,    MoveGenerator::generatePawnMoves
+		    Knight.class, (state, piece) -> generateJumpingMoves(state.getBoard(), piece),
+		    Pawn.class,   (state, piece) -> generatePawnMoves(state, (Pawn) piece) // now valid
 		);
 
-	public static List<Move> generateMoves(Board board, Piece piece, SpecialMoveService specialMoveService) {
+	public static List<Move> generateMoves(BoardState state, Piece piece, SpecialMoveService specialMoveService) {
 	    if (piece instanceof King) {
-	        return generateKingMoves(board, piece, specialMoveService);
+	        return generateKingMoves(state, piece, specialMoveService);
 	    }
 
 	    return MOVE_GENERATORS
 	        .getOrDefault(piece.getClass(), (b, p) -> List.of())
-	        .apply(board, piece);
+	        .apply(state, piece);
 	}
 	// @formatter:on
 

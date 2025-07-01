@@ -1,6 +1,5 @@
 package dev.markconley.chess.engine.move.service;
 
-import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
@@ -8,6 +7,7 @@ import dev.markconley.chess.engine.move.handler.EnPassantMoveHandler;
 import dev.markconley.chess.engine.move.handler.PromotionMoveHandler;
 import dev.markconley.chess.engine.move.promotion.PromotionStrategy;
 import dev.markconley.chess.engine.pieces.Piece;
+import dev.markconley.chess.engine.state.BoardState;
 
 public class SpecialMoveService {
 
@@ -21,17 +21,18 @@ public class SpecialMoveService {
         this.promotionMoveHandler = PromotionMoveHandler.getInstance();
     }
 
-    public Move trySpecialMove(Board board, Piece piece, Position from, Position to, PromotionStrategy promotionStrategy) {
+    public Move trySpecialMove(BoardState state, Piece piece, Position from, Position to, PromotionStrategy promotionStrategy) {
+    	
         if (castlingMoveHandler.canHandle(piece, from, to)) {
-            return castlingMoveHandler.handle(board, piece, from, to);
+            return castlingMoveHandler.handle(state, piece, from, to);
         }
 
         if (enPassantMoveHandler.canHandle(piece, from, to)) {
-            return enPassantMoveHandler.handle(board, piece, from, to);
+            return enPassantMoveHandler.handle(state, piece, from, to);
         }
 
         if (promotionMoveHandler.canHandle(piece, from, to)) {
-            return promotionMoveHandler.handle(board, piece, from, to, promotionStrategy);
+            return promotionMoveHandler.handle(state, piece, from, to, promotionStrategy);
         }
 
         return null; // No special move applicable
@@ -41,10 +42,10 @@ public class SpecialMoveService {
         return castlingMoveHandler;
     }
     
-    public void updateCastlingRightsOnStandardMove(Board board, Piece movedPiece, Piece capturedPiece, Position from, Position to) {
-        castlingMoveHandler.updateCastlingRightsOnMove(board, movedPiece, from);
+    public void updateCastlingRightsOnStandardMove(BoardState state, Piece movedPiece, Piece capturedPiece, Position from, Position to) {
+        castlingMoveHandler.updateCastlingRightsOnMove(state, movedPiece, from);
         if (capturedPiece != null) {
-            castlingMoveHandler.updateCastlingRightsOnRookCapture(board, capturedPiece, to);
+            castlingMoveHandler.updateCastlingRightsOnRookCapture(state, capturedPiece, to);
         }
     }
     

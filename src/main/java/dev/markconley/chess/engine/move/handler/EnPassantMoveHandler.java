@@ -8,6 +8,7 @@ import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveFactory;
 import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
+import dev.markconley.chess.engine.state.BoardState;
 
 public class EnPassantMoveHandler implements SimpleMoveHandler {
 	
@@ -33,17 +34,17 @@ public class EnPassantMoveHandler implements SimpleMoveHandler {
 	}
 
 	@Override
-	public Move handle(Board board, Piece piece, Position from, Position to) {
+	public Move handle(BoardState state, Piece piece, Position from, Position to) {
 		if (!(piece instanceof Pawn)) {
 			return null;
 		}
 
-		LastMove lastMove = board.getLastMove();
+		LastMove lastMove = state.getLastMove();
 		if (lastMove == null) {
 			return null;
 		}
 
-		Piece lastMoved = board.getPieceAt(lastMove.to());
+		Piece lastMoved = state.getBoard().getPieceAt(lastMove.to());
 		if (!(lastMoved instanceof Pawn)) {
 			return null;
 		}
@@ -52,7 +53,7 @@ public class EnPassantMoveHandler implements SimpleMoveHandler {
 			return null;
 		}
 
-		performEnPassant(board, (Pawn) piece, from, to, lastMove.to());
+		performEnPassant(state.getBoard(), (Pawn) piece, from, to, lastMove.to());
 		return MoveFactory.enPassant(from, to, piece, lastMoved);
 	}
 

@@ -8,16 +8,17 @@ import dev.markconley.chess.engine.pieces.PieceType;
 
 public class CastlingValidator {
 
-	public static boolean canCastle(Board board, Position from, Position to, Color color) {
-		return hasCastlingRights(board, from, to, color) 
+	public static boolean canCastle(BoardState state, Position from, Position to, Color color) {
+		Board board = state.getBoard();
+		return hasCastlingRights(state, from, to, color) 
 				&& isRookInPlace(board, from, to, color)
 				&& isPathClear(board, from, to) 
-				&& !GameStateEvaluator.isInCheck(board, color)
-				&& isSafePath(board, color, from, to);
+				&& !GameStateEvaluator.isInCheck(state, color)
+				&& isSafePath(state, color, from, to);
 	}
 
-	private static boolean hasCastlingRights(Board board, Position from, Position to, Color color) {
-		CastlingRights rights = board.getCastlingRights();
+	private static boolean hasCastlingRights(BoardState state, Position from, Position to, Color color) {
+		CastlingRights rights = state.getCastlingRights();
 		if (color == Color.WHITE) {
 			if (from.equals(Position.of("e1")) && to.equals(Position.of("g1"))) {
 				return rights.whiteCanCastleKingside();
@@ -73,13 +74,13 @@ public class CastlingValidator {
 		return true;
 	}
 
-	private static boolean isSafePath(Board board, Color color, Position from, Position to) {
+	private static boolean isSafePath(BoardState state, Color color, Position from, Position to) {
 		int row = from.getRow();
 		int step = (to.getCol() > from.getCol()) ? 1 : -1;
 
 		for (int i = 0; i <= 2; i++) {
 			Position pos = new Position(row, from.getCol() + i * step);
-			if (board.isSquareAttacked(pos, color.opposite())) {
+			if (state.isSquareAttacked(pos, color.opposite())) {
 				return false;
 			}
 		}
