@@ -9,9 +9,9 @@ public class GameStateEvaluator {
 
 	private GameStateEvaluator() { } // Utility class
 
-	public static GameStatus evaluate(Board board, Color color) {
-		boolean inCheck = isInCheck(board, color);
-		boolean hasMoves = hasLegalMoves(board, color);
+	public static GameStatus evaluate(BoardState state, Color color) {
+		boolean inCheck = isInCheck(state, color);
+		boolean hasMoves = hasLegalMoves(state, color);
 
 		if (inCheck && !hasMoves) {
 			return GameStatus.CHECKMATE;
@@ -26,28 +26,30 @@ public class GameStateEvaluator {
 		return GameStatus.ONGOING;
 	}
 
-	public static boolean isInCheck(Board board, Color color) {
-		Position kingPos = Board.findKingPosition(board, color);
+	public static boolean isInCheck(BoardState state, Color color) {
+		Board board = state.getBoard();
+		Position kingPos = board.findKingPosition(color);
 		Color opponentColor = color.opposite();
 		return AttackMapGenerator.generateAttackSquares(board, opponentColor).contains(kingPos);
 	}
 
-	public static boolean hasLegalMoves(Board board, Color color) {
-		return board.getActivePieces(color).stream()
-				.flatMap(piece -> piece.getPossibleMoves(board, board.getSpecialMoveService()).stream())
-				.anyMatch(move -> {
-					Board simulated = board.copy();
-					simulated.makeMove(move.from(), move.to());
-					return !isInCheck(simulated, color);
-				});
+	public static boolean hasLegalMoves(BoardState state, Color color) {
+	    return state.getActivePieces(color).stream()
+	        .flatMap(piece -> piece.getPossibleMoves(state).stream())
+	        .anyMatch(move -> {
+	            BoardState simulated = state.copy();
+	            simulated.getBoard().setPieceAt(move.to(), move.movedPiece()); // or use your MoveExecutor if needed
+	            simulated.switchTurn(); // to evaluate from the opponent's perspective
+	            return !isInCheck(simulated, color);
+	        });
 	}
 
-	public static boolean isCheckmate(Board board, Color color) {
-		return isInCheck(board, color) && !hasLegalMoves(board, color);
+	public static boolean isCheckmate(BoardState state, Color color) {
+		return isInCheck(state, color) && !hasLegalMoves(state, color);
 	}
 
-	public static boolean isStalemate(Board board, Color color) {
-		return !isInCheck(board, color) && !hasLegalMoves(board, color);
+	public static boolean isStalemate(BoardState state, Color color) {
+		return !isInCheck(state, color) && !hasLegalMoves(state, color);
 	}
 
 }

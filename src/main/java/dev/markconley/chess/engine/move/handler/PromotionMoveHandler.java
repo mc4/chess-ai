@@ -8,6 +8,7 @@ import dev.markconley.chess.engine.move.MoveFactory;
 import dev.markconley.chess.engine.move.promotion.PromotionStrategy;
 import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
+import dev.markconley.chess.engine.state.BoardState;
 
 public class PromotionMoveHandler implements PromotionHandler {
 	
@@ -32,7 +33,8 @@ public class PromotionMoveHandler implements PromotionHandler {
 	}
 
     @Override
-    public Move handle(Board board, Piece piece, Position from, Position to, PromotionStrategy strategy) {
+    public Move handle(BoardState state, Piece piece, Position from, Position to, PromotionStrategy strategy) {
+    	Board board = state.getBoard();
         Piece promoted = strategy.choosePromotion(piece.getColor());
         promoted.setPosition(to);
         board.setPieceAt(to, promoted);

@@ -27,16 +27,19 @@ import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.Queen;
 import dev.markconley.chess.engine.pieces.Rook;
+import dev.markconley.chess.engine.state.BoardState;
 
 class BoardTest {
 
 	private Board board;
+	private BoardState state;
 
 	@BeforeEach
 	void setUp() {
 		board = Board.emptyBoard()	                
 				.place("e1", new King(Color.WHITE))
                 .place("e8", new King(Color.BLACK));
+		state = new BoardState(board);
 	}
 
 	// Basic Setup & State

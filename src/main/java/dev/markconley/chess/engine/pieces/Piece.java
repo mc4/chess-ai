@@ -3,13 +3,12 @@ package dev.markconley.chess.engine.pieces;
 import java.util.List;
 import java.util.Objects;
 
-import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Copyable;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.MoveGenerator;
-import dev.markconley.chess.engine.move.service.SpecialMoveService;
+import dev.markconley.chess.engine.state.BoardState;
 
 public abstract class Piece implements Copyable<Piece> {
 	private Color color;
@@ -19,19 +18,8 @@ public abstract class Piece implements Copyable<Piece> {
 		this.color = color;
 	}
 
-//	public abstract List<Move> getPossibleMoves(Board board);
-//	
-//	public List<Move> getPossibleMoves(Board board, SpecialMoveService specialMoveService) {
-//	    return MoveGenerator.generateMoves(board, this, specialMoveService);
-//	}
-	
-
-	public List<Move> getPossibleMoves(Board board) {
-	    return getPossibleMoves(board, board.getSpecialMoveService());
-	}
-
-	public List<Move> getPossibleMoves(Board board, SpecialMoveService specialMoveService) {
-	    return MoveGenerator.generateMoves(board, this, specialMoveService);
+	public List<Move> getPossibleMoves(BoardState state) {
+	    return MoveGenerator.generateMoves(state, this, state.getSpecialMoveService());
 	}
 
 	public abstract PieceType getPieceType();
