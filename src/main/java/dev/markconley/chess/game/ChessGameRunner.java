@@ -1,3 +1,4 @@
+
 package dev.markconley.chess.game;
 
 import java.util.ArrayList;
@@ -15,7 +16,8 @@ import dev.markconley.chess.engine.state.GameStateEvaluator;
 import dev.markconley.chess.io.InputProvider;
 import dev.markconley.chess.io.OutputHandler;
 
-public class GameEngine {
+public class ChessGameRunner {
+	
 	private Board board;
 	private BoardState boardState;
 	private Color currentTurn = Color.WHITE;
@@ -26,7 +28,7 @@ public class GameEngine {
 	private final List<Move> moveHistory = new ArrayList<>();
 	private final List<BoardState> stateHistory = new ArrayList<>();
 
-	public GameEngine(Board board, 
+	public ChessGameRunner(Board board, 
 			BoardState initialState, 
 			MoveExecutor moveExecutor,
 			LegalMoveGenerator legalMoveGenerator, 
