@@ -20,6 +20,10 @@ public record Move(
         Objects.requireNonNull(to, "To must not be null");
         Objects.requireNonNull(movedPiece, "Moved piece must not be null");
     }
+    
+    public boolean isCapture() {
+    	return capturedPiece != null;
+    }
 
     public boolean isPromotion() {
         return promotionPiece != null;
@@ -29,4 +33,5 @@ public record Move(
     public String toString() {
         return from + " -> " + to + (isPromotion() ? " (promotes to " + promotionPiece + ")" : "");
     }
+    
 }

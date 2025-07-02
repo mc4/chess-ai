@@ -2,6 +2,7 @@ package dev.markconley.chess.engine.move;
 
 import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Position;
+import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.state.BoardState;
 
@@ -30,6 +31,13 @@ public class MoveExecutor {
 			Piece promoted = move.promotionPiece();
 			promoted.setPosition(to);
 			board.setPieceAt(to, promoted);
+		}
+		
+		boolean isPawnMove = move.movedPiece() instanceof Pawn;
+		if (move.isCapture() || isPawnMove) {
+		    state.resetHalfMoveClock();
+		} else {
+		    state.incrementHalfMoveClock();
 		}
 	}
 

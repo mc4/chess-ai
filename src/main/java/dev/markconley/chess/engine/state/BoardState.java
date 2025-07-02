@@ -3,6 +3,7 @@ package dev.markconley.chess.engine.state;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import dev.markconley.chess.engine.board.Board;
@@ -21,6 +22,7 @@ public class BoardState implements Copyable<BoardState> {
     private Color currentTurn;
     private final List<Move> moveHistory;
     private LastMove lastMove;
+    private int halfMoveClock;
     private CastlingRights castlingRights;
     
 	private final SpecialMoveService specialMoveService = new SpecialMoveService();
@@ -92,6 +94,22 @@ public class BoardState implements Copyable<BoardState> {
 	public SpecialMoveService getSpecialMoveService() {
 	    return specialMoveService;
 	}
+	
+    public int getHalfMoveClock() {
+        return halfMoveClock;
+    }
+
+    public void setHalfMoveClock(int halfMoveClock) {
+        this.halfMoveClock = halfMoveClock;
+    }
+
+    public void incrementHalfMoveClock() {
+        this.halfMoveClock++;
+    }
+
+    public void resetHalfMoveClock() {
+        this.halfMoveClock = 0;
+    }
 
     public Position getEnPassantTarget() {
         if (lastMove == null) {
@@ -119,10 +137,30 @@ public class BoardState implements Copyable<BoardState> {
     public BoardState copy() {
         BoardState copy = new BoardState(this.board.copy());
         copy.currentTurn = this.currentTurn;
-        copy.lastMove = this.lastMove; 
-        copy.moveHistory.addAll(this.moveHistory); 
+        copy.lastMove = this.lastMove != null ? this.lastMove.copy() : null;
+        copy.moveHistory.addAll(this.moveHistory); // Move is usually immutable
         copy.castlingRights = this.castlingRights.copy();
+        copy.halfMoveClock = this.halfMoveClock;
         return copy;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BoardState that = (BoardState) o;
+
+        return halfMoveClock == that.halfMoveClock &&
+               currentTurn == that.currentTurn &&
+               castlingRights.equals(that.castlingRights) &&
+               board.equals(that.board) &&
+               Objects.equals(getEnPassantTarget(), that.getEnPassantTarget());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(board, currentTurn, castlingRights, halfMoveClock, getEnPassantTarget());
     }
     
 }

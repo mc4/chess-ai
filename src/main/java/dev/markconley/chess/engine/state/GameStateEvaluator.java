@@ -4,26 +4,25 @@ import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.AttackMapGenerator;
+import dev.markconley.chess.game.GameStatus;
 
 public class GameStateEvaluator {
 
 	private GameStateEvaluator() { } // Utility class
+
 
 	public static GameStatus evaluate(BoardState state, Color color) {
 		boolean inCheck = isInCheck(state, color);
 		boolean hasMoves = hasLegalMoves(state, color);
 
 		if (inCheck && !hasMoves) {
-			return GameStatus.CHECKMATE;
+			return color == Color.WHITE ? GameStatus.CHECKMATE_BLACK_WINS : GameStatus.CHECKMATE_WHITE_WINS;
 		}
 		if (!inCheck && !hasMoves) {
 			return GameStatus.STALEMATE;
 		}
-		if (inCheck) {
-			return GameStatus.CHECK;
-		}
 
-		return GameStatus.ONGOING;
+		return GameStatus.IN_PROGRESS;
 	}
 
 	public static boolean isInCheck(BoardState state, Color color) {
