@@ -4,9 +4,12 @@ import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.AttackMapGenerator;
+import dev.markconley.chess.engine.move.MoveExecutor;
 import dev.markconley.chess.game.GameStatus;
 
 public class GameStateEvaluator {
+	
+	private static final MoveExecutor moveExecutor = new MoveExecutor();
 
 	private GameStateEvaluator() { } // Utility class
 
@@ -37,8 +40,7 @@ public class GameStateEvaluator {
 	        .flatMap(piece -> piece.getPossibleMoves(state).stream())
 	        .anyMatch(move -> {
 	            BoardState simulated = state.copy();
-	            simulated.getBoard().setPieceAt(move.to(), move.movedPiece()); // or use your MoveExecutor if needed
-	            simulated.switchTurn(); // to evaluate from the opponent's perspective
+	            moveExecutor.applyMove(simulated, move);
 	            return !isInCheck(simulated, color);
 	        });
 	}
