@@ -7,13 +7,15 @@ import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.move.LegalMoveGenerator;
 import dev.markconley.chess.engine.move.Move;
+import dev.markconley.chess.engine.move.MoveExecutor;
 import dev.markconley.chess.engine.state.BoardState;
 import dev.markconley.chess.io.InputProvider;
 import dev.markconley.chess.io.OutputHandler;
 
 public class GameSession {
-    private final TurnManager turnManager;
+    private final MoveInputHandler moveInputHandler;
     private final GameResultEvaluator resultEvaluator;
+    private final MoveExecutor moveExecutor;
     private final HistoryTracker historyTracker;
     private final Board board;
     private BoardState boardState;
@@ -21,12 +23,13 @@ public class GameSession {
 
     public GameSession(Board board,
                        BoardState initialState,
-                       TurnManager turnManager,
+                       MoveInputHandler moveInputHandler,
                        GameResultEvaluator resultEvaluator,
-                       HistoryTracker historyTracker) {
-        this.board = board;
+                       HistoryTracker historyTracker, MoveExecutor moveExecutor) {
+		this.board = board;
         this.boardState = initialState;
-        this.turnManager = turnManager;
+        this.moveInputHandler = moveInputHandler;
+        this.moveExecutor = moveExecutor;
         this.resultEvaluator = resultEvaluator;
         this.historyTracker = historyTracker;
     }
@@ -38,7 +41,7 @@ public class GameSession {
 			output.displayBoard(board);
 
 		    List<Move> legalMoves = LegalMoveGenerator.generateLegalMoves(boardState, currentTurn);
-		    Move move = turnManager.getValidMove(currentTurn, boardState, legalMoves, input, output);
+		    Move move = moveInputHandler.getValidMove(currentTurn, boardState, legalMoves, input, output);
 		    
 			if (move == null) {
 				output.displayMessage("No move received - resigning.");
@@ -46,7 +49,7 @@ public class GameSession {
 				break;
 			}
 
-			turnManager.executeMove(boardState, move);
+			moveExecutor.applyMove(boardState, move);
 			historyTracker.record(boardState, move);
 
 			status = resultEvaluator.evaluate(board, boardState, currentTurn, legalMoves, historyTracker);

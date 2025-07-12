@@ -9,8 +9,14 @@ import java.util.stream.Stream;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Copyable;
 import dev.markconley.chess.engine.core.Position;
+import dev.markconley.chess.engine.pieces.Bishop;
+import dev.markconley.chess.engine.pieces.King;
+import dev.markconley.chess.engine.pieces.Knight;
+import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.PieceType;
+import dev.markconley.chess.engine.pieces.Queen;
+import dev.markconley.chess.engine.pieces.Rook;
 
 public class Board implements Copyable<Board> {
 
@@ -19,11 +25,50 @@ public class Board implements Copyable<Board> {
 
 	public Board() {
 		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
+		setupInitialPosition();
+	}
+	
+	public Board(boolean skipSetup) {
+		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
+		if (!skipSetup) {
+			setupInitialPosition();
+		}
 	}
 
 	public static Board emptyBoard() {
-		return new Board();
+	    return new Board(true); 
 	}
+	
+	private void setupInitialPosition() {
+	    setupPawns(1, Color.WHITE);
+	    setupPawns(6, Color.BLACK);
+
+	    setupBackRank(0, Color.WHITE);
+	    setupBackRank(7, Color.BLACK);
+	}
+
+	private void setupPawns(int row, Color color) {
+	    for (int col = 0; col < 8; col++) {
+	        board[row][col] = new Pawn(color);
+	    }
+	}
+
+	private void setupBackRank(int row, Color color) {
+	    Piece[] pieces = {
+	        new Rook(color),
+	        new Knight(color),
+	        new Bishop(color),
+	        new Queen(color),
+	        new King(color),
+	        new Bishop(color),
+	        new Knight(color),
+	        new Rook(color)
+	    };
+	    for (int col = 0; col < 8; col++) {
+	        board[row][col] = pieces[col];
+	    }
+	}
+
 
 	public void clearBoard() {
 		for (int row = 0; row < BOARD_SIZE; row++) {

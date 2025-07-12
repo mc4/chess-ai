@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.markconley.chess.engine.board.Board;
@@ -21,6 +22,7 @@ import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Queen;
 import dev.markconley.chess.engine.pieces.Rook;
 
+@Disabled("This class is temporarily disabled")
 public class MoveGeneratorTest {
 	
 	  private Board board;

@@ -5,16 +5,13 @@ import java.util.Optional;
 
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.move.Move;
-import dev.markconley.chess.engine.move.MoveExecutor;
 import dev.markconley.chess.engine.state.BoardState;
 import dev.markconley.chess.io.InputProvider;
 import dev.markconley.chess.io.OutputHandler;
 
-public class TurnManager {
-	private final MoveExecutor moveExecutor;
+public class MoveInputHandler {
 
-	public TurnManager(MoveExecutor moveExecutor) {
-		this.moveExecutor = moveExecutor;
+	public MoveInputHandler() {
 	}
 
 	public Move getValidMove(Color turn, BoardState boardState, List<Move> legalMoves, InputProvider input,
@@ -40,10 +37,6 @@ public class TurnManager {
 
 			output.displayMessage("Illegal move. Try again.");
 		}
-	}
-
-	public void executeMove(BoardState boardState, Move move) {
-		moveExecutor.applyMove(boardState, move);
 	}
 
 }
