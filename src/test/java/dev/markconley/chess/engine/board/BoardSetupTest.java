@@ -20,7 +20,7 @@ public class BoardSetupTest {
 	}
 
 	@Test
-	void shouldInitializeWith32Pieces() {
+	void testShouldInitializeWith32Pieces() {
 		int whiteCount = 0, blackCount = 0;
 		for (int row = 0; row < 8; row++) {
 			for (int col = 0; col < 8; col++) {
@@ -39,7 +39,7 @@ public class BoardSetupTest {
 	}
 
 	@Test
-	void shouldPlacePieceCorrectly() {
+	void testShouldPlacePieceCorrectly() {
 		Piece queen = new Queen(Color.WHITE);
 		Position pos = Position.of("d4");
 		board.setPieceAt(pos, queen);
@@ -47,7 +47,7 @@ public class BoardSetupTest {
 	}
 
 	@Test
-	void shouldReturnNullForEmptySquare() {
+	void testShouldReturnNullForEmptySquare() {
 		assertNull(board.getPieceAt(Position.of("c3")));
 	}
 }
