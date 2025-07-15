@@ -7,6 +7,10 @@ import dev.markconley.chess.engine.pieces.Piece;
 
 public class BoardPrinter {
 	
+	public void print(Board board) {
+		System.out.println(getBoardString(board));
+	}
+	
 	public String getBoardString(Board board) {
 		StringBuilder sb = new StringBuilder();
 		final String separator = "===============================";

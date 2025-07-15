@@ -9,160 +9,152 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.markconley.chess.engine.board.Board;
 import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
+import dev.markconley.chess.engine.state.BoardState;
+import dev.markconley.chess.engine.ui.BoardPrinter;
 
-@Disabled("This class is temporarily disabled")
 class KnightTest {
 
-	private Board board;
+    private Board board;
+    private BoardState state;
 
 	@BeforeEach
-	void setUp() {
-		board = Board.emptyBoard(); 
+	void setup() {
+		board = Board.emptyBoard();
+		state = new BoardState(board);
 	}
 
-	@Test
-	void testAllKnightMovesFromCenter() {
-//		Knight knight = new Knight(Color.WHITE);
-//		Position center = Position.of("e4");
-//		knight.setPosition(center);
-//		board.setPieceAt(center, knight);
-//
-//		List<Move> moves = knight.getPossibleMoves(board);
-//		Set<Position> destinations = moves.stream()
-//				.map(Move::to)
-//				.collect(Collectors.toSet());
-//
-//		Set<Position> expected = Set.of(Position.of("d6"), Position.of("f6"), 
-//				Position.of("c5"), Position.of("g5"),
-//				Position.of("c3"), Position.of("g3"),
-//				Position.of("d2"), Position.of("f2"));
-//
-//		assertEquals(expected, destinations);
+	private List<Move> generateMovesForKnightAt(String square, Color color) {
+		Knight knight = new Knight(color);
+		Position pos = Position.of(square);
+		board.place(square, knight);
+		knight.setPosition(pos);
+		return knight.getPossibleMoves(state);
 	}
+
+    @Test
+    void testAllKnightMovesFromCenter() {
+        List<Move> moves = generateMovesForKnightAt("e4", Color.WHITE);
+        Set<Position> destinations = moves.stream().map(Move::to).collect(Collectors.toSet());
+
+        Set<Position> expected = Set.of(
+            Position.of("d6"), Position.of("f6"),
+            Position.of("c5"), Position.of("g5"),
+            Position.of("c3"), Position.of("g3"),
+            Position.of("d2"), Position.of("f2")
+        );
+
+        assertEquals(expected, destinations);
+    }
 
 	@Test
 	void testKnightMovesFromCorner() {
-//		Knight knight = new Knight(Color.WHITE);
-//		Position corner = Position.of("a1");
-//		knight.setPosition(corner);
-//		board.setPieceAt(corner, knight);
-//
-//		List<Move> moves = knight.getPossibleMoves(board);
-//		Set<Position> destinations = moves.stream()
-//				.map(Move::to)
-//				.collect(Collectors.toSet());
-//
-//		Set<Position> expected = Set.of(Position.of("b3"), Position.of("c2"));
-//
-//		assertEquals(expected, destinations);
+		List<Move> moves = generateMovesForKnightAt("a1", Color.WHITE);
+		Set<Position> destinations = moves.stream().map(Move::to).collect(Collectors.toSet());
+
+		Set<Position> expected = Set.of(Position.of("b3"), Position.of("c2"));
+		assertEquals(expected, destinations);
 	}
 
 	@Test
-	void testKnightCanCaptureEnemy() {
-//		Knight knight = new Knight(Color.WHITE);
-//		Position from = Position.of("e4");
-//		knight.setPosition(from);
-//		board.setPieceAt(from, knight);
-//
-//		Position target = Position.of("g5");
-//		Pawn enemy = new Pawn(Color.BLACK);
-//		enemy.setPosition(target);
-//		board.setPieceAt(target, enemy);
-//
-//		List<Move> moves = knight.getPossibleMoves(board);
-//
-//		boolean foundCapture = moves.stream().anyMatch(m -> m.to().equals(target) && m.capturedPiece() != null);
-//
-//		assertTrue(foundCapture, "Expected knight to be able to capture enemy on g5");
+	void testKnightCapturesEnemy() {
+		Knight knight = new Knight(Color.WHITE);
+		board.place("e4", knight);
+
+		Pawn enemy = new Pawn(Color.BLACK);
+		board.place("g5", enemy);
+
+		List<Move> moves = knight.getPossibleMoves(state);
+		boolean foundCapture = moves.stream()
+				.anyMatch(m -> m.to().equals(Position.of("g5")) && m.capturedPiece() != null);
+
+		assertTrue(foundCapture, "Expected knight to be able to capture enemy on g5");
 	}
 
 	@Test
 	void testKnightCannotCaptureFriendly() {
-//		Knight knight = new Knight(Color.WHITE);
-//		Position from = Position.of("e4");
-//		knight.setPosition(from);
-//		board.setPieceAt(from, knight);
-//
-//		Position target = Position.of("f6");
-//		Pawn friendly = new Pawn(Color.WHITE);
-//		friendly.setPosition(target);
-//		board.setPieceAt(target, friendly);
-//
-//		List<Move> moves = knight.getPossibleMoves(board);
-//		boolean containsFriendly = moves.stream()
-//				.anyMatch(m -> m.to().equals(target));
-//
-//		assertFalse(containsFriendly);
+		Knight knight = new Knight(Color.WHITE);
+		board.place("e4", knight);
+
+		Pawn friendly = new Pawn(Color.WHITE);
+		board.place("f6", friendly);
+
+		List<Move> moves = knight.getPossibleMoves(state);
+		boolean blocked = moves.stream().anyMatch(m -> m.to().equals(Position.of("f6")));
+
+		assertFalse(blocked, "Knight should not move to square occupied by friendly piece");
 	}
 
-	@Test
-	void testKnightJumpsOverSurroundingPieces() {
-//		Knight knight = new Knight(Color.WHITE);
-//		Position from = Position.of("e4");
-//		knight.setPosition(from);
-//		board.setPieceAt(from, knight);
-//
-//		// Fill surrounding squares (not knight destinations)
-//		for (int row = 3; row <= 5; row++) {
-//			for (int col = 3; col <= 5; col++) {
-//				Position pos = new Position(row, col);
-//				if (!pos.equals(from)) {
-//					board.setPieceAt(pos, new Pawn(Color.WHITE));
-//				}
-//			}
-//		}
-//		
-//		List<Move> moves = knight.getPossibleMoves(board);
-//		assertEquals(6, moves.size()); 
-	}
+    @Test
+    void testKnightJumpsOverPieces() {
+        Knight knight = new Knight(Color.WHITE);
+        board.place("e4", knight);
+
+        // Surround e4 without occupying the knight's destination squares
+        List<String> blockers = List.of("d4", "d5", "e5", "f5", "f4", "f3", "e3", "d3");
+        for (String square : blockers) {
+            board.place(square, new Pawn(Color.WHITE));
+        }
+
+        new BoardPrinter().print(board);
+
+        List<Move> moves = knight.getPossibleMoves(state);
+        Set<Position> destinations = moves.stream().map(Move::to).collect(Collectors.toSet());
+
+        Set<Position> expected = Set.of(
+            Position.of("d6"), Position.of("f6"),
+            Position.of("c5"), Position.of("g5"),
+            Position.of("c3"), Position.of("g3"),
+            Position.of("d2"), Position.of("f2")
+        );
+
+        assertEquals(expected, destinations, "Knight should jump over surrounding pieces to all 8 destinations");
+    }
+
+    @Test
+    void testKnightBlockedByAllFriendlyPieces() {
+        Knight knight = new Knight(Color.WHITE);
+        board.place("e4", knight);
+
+        // Block all destinations
+        for (Position pos : Set.of(
+                Position.of("d6"), Position.of("f6"),
+                Position.of("c5"), Position.of("g5"),
+                Position.of("c3"), Position.of("g3"),
+                Position.of("d2"), Position.of("f2"))) {
+            board.place(pos.toString(), new Pawn(Color.WHITE));
+        }
+
+        List<Move> moves = knight.getPossibleMoves(state);
+        assertTrue(moves.isEmpty(), "Knight should have no legal moves when all are blocked by friendly pieces");
+    }
 
 	@Test
-	void testKnightBlockedByAllFriendlyPieces() {
-//		Knight knight = new Knight(Color.WHITE);
-//		Position center = Position.of("e4");
-//		knight.setPosition(center);
-//		board.setPieceAt(center, knight);
-//
-//		for (Position pos : List.of(Position.of("d6"), Position.of("f6"), Position.of("c5"), Position.of("g5"),
-//				Position.of("c3"), Position.of("g3"), Position.of("d2"), Position.of("f2"))) {
-//			Pawn pawn = new Pawn(Color.WHITE);
-//			pawn.setPosition(pos);
-//			board.setPieceAt(pos, pawn);
-//		}
-//
-//		List<Move> moves = knight.getPossibleMoves(board);
-//		assertTrue(moves.isEmpty());
-	}
+	void testKnightMixedTargets() {
+		Knight knight = new Knight(Color.WHITE);
+		board.place("e4", knight);
 
-	@Test
-	void testKnightWithMixedTargets() {
-//		Knight knight = new Knight(Color.WHITE);
-//		Position from = Position.of("e4");
-//		knight.setPosition(from);
-//		board.setPieceAt(from, knight);
-//
-//		board.setPieceAt(Position.of("d6"), new Pawn(Color.BLACK));
-//		board.setPieceAt(Position.of("f6"), new Pawn(Color.WHITE));
-//		board.setPieceAt(Position.of("c5"), new Pawn(Color.BLACK));
-//		board.setPieceAt(Position.of("g5"), new Pawn(Color.WHITE));
-//
-//		List<Move> moves = knight.getPossibleMoves(board);
-//		Set<Position> destinations = moves.stream().map(Move::to).collect(Collectors.toSet());
-//
-//		assertTrue(destinations.contains(Position.of("d6"))); // enemy
-//		assertFalse(destinations.contains(Position.of("f6"))); // friendly
-//		assertTrue(destinations.contains(Position.of("c5"))); // enemy
-//		assertFalse(destinations.contains(Position.of("g5"))); // friendly
-//
-//		// Remaining legal targets
-//		assertTrue(destinations
-//				.containsAll(Set.of(Position.of("c3"), Position.of("g3"), Position.of("d2"), Position.of("f2"))));
+		board.place("d6", new Pawn(Color.BLACK));
+		board.place("f6", new Pawn(Color.WHITE));
+		board.place("c5", new Pawn(Color.BLACK));
+		board.place("g5", new Pawn(Color.WHITE));
+
+		List<Move> moves = knight.getPossibleMoves(state);
+		Set<Position> destinations = moves.stream().map(Move::to).collect(Collectors.toSet());
+
+		assertTrue(destinations.contains(Position.of("d6")));
+		assertFalse(destinations.contains(Position.of("f6")));
+		assertTrue(destinations.contains(Position.of("c5")));
+		assertFalse(destinations.contains(Position.of("g5")));
+
+        assertTrue(destinations.containsAll(Set.of(
+                Position.of("c3"), Position.of("g3"),
+                Position.of("d2"), Position.of("f2")
+        )));
 	}
 }
