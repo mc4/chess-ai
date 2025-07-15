@@ -16,7 +16,6 @@ import dev.markconley.chess.engine.core.Color;
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.state.BoardState;
-import dev.markconley.chess.engine.ui.BoardPrinter;
 
 class KnightTest {
 
@@ -100,8 +99,6 @@ class KnightTest {
         for (String square : blockers) {
             board.place(square, new Pawn(Color.WHITE));
         }
-
-        new BoardPrinter().print(board);
 
         List<Move> moves = knight.getPossibleMoves(state);
         Set<Position> destinations = moves.stream().map(Move::to).collect(Collectors.toSet());
