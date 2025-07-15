@@ -14,7 +14,7 @@ import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.state.BoardState;
 
-public class MoveExecutionTest {
+class MoveExecutionTest {
 	
     private Board board;
     private BoardState state;

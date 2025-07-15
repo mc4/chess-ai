@@ -23,7 +23,7 @@ import dev.markconley.chess.engine.pieces.Queen;
 import dev.markconley.chess.engine.pieces.Rook;
 
 @Disabled("This class is temporarily disabled")
-public class MoveGeneratorTest {
+class MoveGeneratorTest {
 	
 	  private Board board;
 

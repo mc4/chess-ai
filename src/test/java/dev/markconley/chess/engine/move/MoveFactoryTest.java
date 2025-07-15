@@ -14,7 +14,7 @@ import dev.markconley.chess.engine.pieces.Pawn;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.Queen;
 
-public class MoveFactoryTest {
+class MoveFactoryTest {
 
 	private final Piece whitePawn = new Pawn(Color.WHITE);
 	private final Piece blackPawn = new Pawn(Color.BLACK);
