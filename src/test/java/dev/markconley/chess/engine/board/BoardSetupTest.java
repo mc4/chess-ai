@@ -1,7 +1,9 @@
 package dev.markconley.chess.engine.board;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +13,7 @@ import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.pieces.Piece;
 import dev.markconley.chess.engine.pieces.Queen;
 
-public class BoardSetupTest {
+class BoardSetupTest {
 	private Board board;
 
 	@BeforeEach
@@ -50,4 +52,20 @@ public class BoardSetupTest {
 	void testShouldReturnNullForEmptySquare() {
 		assertNull(board.getPieceAt(Position.of("c3")));
 	}
+	
+	@Test
+	void testGetAndSetPieceAt() {
+	    Position position = new Position(3, 3);
+	    Piece queen = new Queen(Color.WHITE);
+	    queen.setPosition(position);
+
+	    board.setPieceAt(position, queen);
+	    Piece retrieved = board.getPieceAt(position);
+
+	    assertNotNull(retrieved, "Piece should not be null after setting");
+	    assertEquals(queen, retrieved, "Retrieved piece should match the one that was set");
+	    assertEquals(Color.WHITE, retrieved.getColor(), "Piece color should be white");
+	    assertTrue(retrieved instanceof Queen, "Piece should be instance of Queen");
+	}
+	
 }
