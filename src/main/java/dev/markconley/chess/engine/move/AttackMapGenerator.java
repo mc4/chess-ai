@@ -82,14 +82,13 @@ public class AttackMapGenerator {
 		int col = pawn.getPosition().getCol();
 		int direction = (pawn.getColor() == Color.WHITE) ? 1 : -1;
 
-		Position left = new Position(row + direction, col - 1);
-		Position right = new Position(row + direction, col + 1);
+		int forwardRow = row + direction;
 
-		if (Position.isValid(left)) {
-			attacked.add(left);
+		if (Position.isValid(forwardRow, col - 1)) {
+			attacked.add(Position.of(forwardRow, col - 1));
 		}
-		if (Position.isValid(right)) {
-			attacked.add(right);
+		if (Position.isValid(forwardRow, col + 1)) {
+			attacked.add(Position.of(forwardRow, col + 1));
 		}
 
 		return attacked;

@@ -1,5 +1,7 @@
 package dev.markconley.chess.engine.move.service;
 
+import java.util.Objects;
+
 import dev.markconley.chess.engine.core.Position;
 import dev.markconley.chess.engine.move.Move;
 import dev.markconley.chess.engine.move.handler.CastlingMoveHandler;
@@ -48,5 +50,24 @@ public class SpecialMoveService {
             castlingMoveHandler.updateCastlingRightsOnRookCapture(state, capturedPiece, to);
         }
     }
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(castlingMoveHandler, enPassantMoveHandler, promotionMoveHandler);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SpecialMoveService other = (SpecialMoveService) obj;
+		return Objects.equals(castlingMoveHandler, other.castlingMoveHandler)
+				&& Objects.equals(enPassantMoveHandler, other.enPassantMoveHandler)
+				&& Objects.equals(promotionMoveHandler, other.promotionMoveHandler);
+	}
     
 }

@@ -19,7 +19,7 @@ public abstract class Piece implements Copyable<Piece> {
 	}
 
 	public List<Move> getPossibleMoves(BoardState state) {
-	    return MoveGenerator.generateMoves(state, this, state.getSpecialMoveService());
+	    return MoveGenerator.generateMoves(state, this);
 	}
 
 	public abstract PieceType getPieceType();

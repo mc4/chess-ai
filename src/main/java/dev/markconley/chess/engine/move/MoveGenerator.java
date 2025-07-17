@@ -156,7 +156,7 @@ public class MoveGenerator {
 	    }
 	}
 
-	public static List<Move> generateKingMoves(BoardState state, Piece king, SpecialMoveService specialMoveService) {
+	public static List<Move> generateKingMoves(BoardState state, Piece king) {
 		List<Move> moves = new ArrayList<>();
 		Board board = state.getBoard();
 		
@@ -186,7 +186,8 @@ public class MoveGenerator {
 	        Position.of(row, 6),
 	        Position.of(row, 2) 
 	    );
-
+	    
+	    SpecialMoveService specialMoveService = state.getSpecialMoveService();
 	    for (Position to : castleDestinations) {
 	        if (specialMoveService.getCastlingMoveHandler().canHandle(king, from, to)) {
 	            Move castleMove = specialMoveService.getCastlingMoveHandler().handle(state, king, from, to);
@@ -209,12 +210,12 @@ public class MoveGenerator {
 		        return moves;
 		    },
 		    Knight.class, (state, piece) -> generateJumpingMoves(state.getBoard(), piece),
-		    Pawn.class,   (state, piece) -> generatePawnMoves(state, (Pawn) piece) // now valid
+		    Pawn.class,   (state, piece) -> generatePawnMoves(state, (Pawn) piece) 
 		);
 
-	public static List<Move> generateMoves(BoardState state, Piece piece, SpecialMoveService specialMoveService) {
+	public static List<Move> generateMoves(BoardState state, Piece piece) {
 	    if (piece instanceof King) {
-	        return generateKingMoves(state, piece, specialMoveService);
+	        return generateKingMoves(state, piece);
 	    }
 
 	    return MOVE_GENERATORS

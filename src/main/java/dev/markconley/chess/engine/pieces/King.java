@@ -15,7 +15,7 @@ public class King extends Piece {
 
 	@Override
 	public List<Move> getPossibleMoves(BoardState state) {
-	    return MoveGenerator.generateKingMoves(state, this, state.getSpecialMoveService());
+	    return MoveGenerator.generateKingMoves(state, this);
 	}
 
 	@Override

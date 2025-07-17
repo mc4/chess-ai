@@ -122,4 +122,5 @@ public class CastlingMoveHandler implements SimpleMoveHandler {
 			rights.disableKingside(capturedPiece.getColor());
 		}
 	}
+	
 }

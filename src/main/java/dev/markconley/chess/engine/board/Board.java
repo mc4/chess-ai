@@ -50,6 +50,8 @@ public class Board implements Copyable<Board> {
 	private void setupPawns(int row, Color color) {
 	    for (int col = 0; col < 8; col++) {
 	        board[row][col] = new Pawn(color);
+	        Position currentPosition = Position.of(row, col);
+	        getPieceAt(currentPosition).setPosition(currentPosition);
 	    }
 	}
 
@@ -66,6 +68,8 @@ public class Board implements Copyable<Board> {
 	    };
 	    for (int col = 0; col < 8; col++) {
 	        board[row][col] = pieces[col];
+	        Position currentPosition = Position.of(row, col);
+	        getPieceAt(currentPosition).setPosition(currentPosition);
 	    }
 	}
 
